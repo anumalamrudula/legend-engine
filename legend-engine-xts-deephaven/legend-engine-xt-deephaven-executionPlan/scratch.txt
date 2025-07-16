@@ -1,0 +1,98 @@
+{
+  "_type": "simple",
+  "rootExecutionNode": {
+    "_type": "relationalBlock",
+    "executionNodes": [
+      {
+        "_type": "sql",
+        "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
+      },
+      {
+        "_type": "lake",
+        "executionNodes": [
+          {
+            "_type": "allocation",
+            "executionNodes": [
+              {
+                "_type": "relationalBlock",
+                "executionNodes": [
+                  {
+                    "_type": "sql",
+                    "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
+                  },
+                  {
+                    "_type": "relationalTdsInstantiation",
+                    "executionNodes": [
+                      {
+                        "_type": "sql",
+                        "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+                        "sqlQuery": "select \"root\".datasource_name as \"storeName\", \"root\".dataset_name as \"datasetName\" from metadata1 as \"root\""
+                      }
+                    ]
+                  }
+                ],
+                "finallyExecutionNodes": [
+                  {
+                    "_type": "sql",
+                    "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_type": "lake",
+        "executionNodes": [
+          {
+            "_type": "allocation",
+            "executionNodes": [
+              {
+                "_type": "relationalBlock",
+                "executionNodes": [
+                  {
+                    "_type": "sql",
+                    "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
+                  },
+                  {
+                    "_type": "relationalTdsInstantiation",
+                    "executionNodes": [
+                      {
+                        "_type": "sql",
+                        "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+                        "sqlQuery": "select \"root\".DATASTORE as \"storeName\", \"root\".DATASET as \"datasetName\" from metadata2 as \"root\""
+                      }
+                    ]
+                  }
+                ],
+                "finallyExecutionNodes": [
+                  {
+                    "_type": "sql",
+                    "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_type": "relationalTdsInstantiation",
+        "executionNodes": [
+          {
+            "_type": "sql",
+            "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
+            "sqlQuery": "select \"root\".DATE as \"OrderDate\" from ACTIVITY as \"root\" "
+          }
+        ]
+      }
+    ],
+    "finallyExecutionNodes": [
+      {
+        "_type": "sql",
+        "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
+      }
+    ]
+  }
+}
