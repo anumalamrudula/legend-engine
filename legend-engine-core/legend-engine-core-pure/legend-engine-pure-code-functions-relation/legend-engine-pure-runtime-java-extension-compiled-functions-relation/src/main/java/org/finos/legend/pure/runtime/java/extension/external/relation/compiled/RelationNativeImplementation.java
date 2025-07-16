@@ -463,6 +463,11 @@ public class RelationNativeImplementation
         }
     }
 
+    public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
+    {
+        return groupBy(rel, Lists.mutable.empty(), aggColSpecTrans, es);
+    }
+
     public static <T> Relation<? extends Object> groupBy(Relation<? extends T> rel, ColSpec<?> cols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)
     {
         return groupBy(rel, Lists.mutable.with(cols._name()), aggColSpecTrans, es);
@@ -478,7 +483,7 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = cols.isEmpty() ? tds.wrapFullTDS() : tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
 
         MutableSet<String> columnsToRemove = tds.getColumnNames().clone().toSet();
         columnsToRemove.removeAll(cols.toSet());
@@ -636,6 +641,7 @@ public class RelationNativeImplementation
     {
         int cursor = 0;
         int size = sortRes.getTwo().size();
+        CompiledPrimitiveHandler compiledPrimitiveHandler = new CompiledPrimitiveHandler();
         for (int j = 0; j < size; j++)
         {
             Pair<Integer, Integer> r = sortRes.getTwo().get(j);
@@ -645,7 +651,6 @@ public class RelationNativeImplementation
             int partitionSize = partitionEndIndex - partitionStartIndex;
             TestTDSCompiled sourceTDS = (TestTDSCompiled) sortRes.getOne().slice(partitionStartIndex, partitionEndIndex);
             TDSContainer winTDS = new TDSContainer(sourceTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
-            CompiledPrimitiveHandler compiledPrimitiveHandler = new CompiledPrimitiveHandler();
             Object convertedFrame = window == null ? null : window.convert(((CompiledExecutionSupport) es).getProcessorSupport(), compiledPrimitiveHandler);
             Frame frame = window == null ? null : window.getFrame();
             if (window != null && frame.getFrameType() == FrameType.range)
@@ -678,7 +683,7 @@ public class RelationNativeImplementation
                         Object aggregateValue = subList.get(k);
                         if (orderByCurrentRowValue == null)
                         {
-                            if (offsetFrom != null && offsetTo != null && currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in an explicit-offset frame boundary only when the ORDER BY value of the current row is NULL.
+                            if (currentPartitionValueAsObject == null) // Rows with NULL in the ORDER BY column are included in frame boundary only when the ORDER BY value of the current row is NULL.
                             {
                                 aggregationValues.add(aggregateValue);
                             }
@@ -754,8 +759,8 @@ public class RelationNativeImplementation
                             }
                             else // RANGE BETWEEN N PRECEDING/FOLLOWING AND N PRECEDING/FOLLOWING
                             {
-                                Number lowerBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetFrom) : compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
-                                Number upperBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetTo) : compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number lowerBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetFrom) : compiledPrimitiveHandler.minus(currentRowValue, offsetTo);
+                                Number upperBound = sortDirection == SortDirection.ASC ? compiledPrimitiveHandler.plus(currentRowValue, offsetTo) : compiledPrimitiveHandler.minus(currentRowValue, offsetFrom);
                                 if (currentPartitionValueAsObject != null)
                                 {
                                     Number currentPartitionValue = (Number) currentPartitionValueAsObject;
