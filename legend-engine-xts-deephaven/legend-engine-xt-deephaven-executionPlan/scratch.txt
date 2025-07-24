@@ -1,486 +1,1247 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>com.gs.alloy.lakehouse</groupId>
-        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>alloy-lakehouse-dataProduct-transformation-pure</artifactId>
-    <packaging>jar</packaging>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-par</artifactId>
-                <configuration>
-                    <sourceDirectory>src/main/resources</sourceDirectory>
-                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
-                    <repositories>
-                        <repository>core_data_product_transformation</repository>
-                    </repositories>
-                    <extraRepositories>
-                        <extraRepository>
-                            ${project.basedir}/src/main/resources/core_data_product_transformation.definition.json
-                        </extraRepository>
-                    </extraRepositories>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>build-pure-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-protocol-generation-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-json-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-java</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>build-pure-compiled-jar</goal>
-                        </goals>
-                        <configuration>
-                            <generateSources>true</generateSources>
-                            <preventJavaCompilation>true</preventJavaCompilation>
-                            <generationType>modular</generationType>
-                            <useSingleDir>true</useSingleDir>
-                            <repositories>
-                                <repository>core_data_product_transformation</repository>
-                            </repositories>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-protocol-generation-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.gs.alloy.lakehouse</groupId>
-                        <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-json-pure</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.basedir}/target/generated-sources/</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <!-- The dependency plugin analyzer raises these as false positives -->
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-pure</dependency>
-                            </ignoredUnusedDeclaredDependencies>
-                            <ignoredUsedUndeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational</dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
-                                <dependency>com.hazelcast:hazelcast</dependency>
-                            </ignoredUsedUndeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>true</useSystemClassLoader>
-                    <useManifestOnlyJar>false</useManifestOnlyJar>
-                    <trimStackTrace>false</trimStackTrace>
-                    <useUnlimitedThreads>true</useUnlimitedThreads>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <properties>
-        <!-- java version override so that Alloy can import these modules-->
-        <maven.compiler.release>11</maven.compiler.release>
-        <antlr.version>4.8-1</antlr.version>
-        <guava.version>30.0-jre</guava.version>
-        <commons-lang.version>2.6</commons-lang.version>
-    </properties>
-
-    <dependencies>
-        <!-- LEGEND -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
-            <version>${legend.pure.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
-            <version>${legend.pure.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
-            <version>${legend.pure.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.pure</groupId>-->
-        <!--            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>-->
-        <!--            <version>${legend.pure.version}</version>-->
-        <!--        </dependency>-->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
-            <version>${legend.pure.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <!-- LEGEND -->
-
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>-->
-<!--            <version>${legend.engine.version}</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
-            <version>${legend.engine.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-json</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-ingest-model-compiler</artifactId>
-            <scope>test</scope>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
-            <scope>test</scope>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-dataProduct-model-compiler</artifactId>
-            <scope>test</scope>
-            <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.gs.safeguard</groupId>
-            <artifactId>safeguard-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.safeguard</groupId>
-            <artifactId>safeguard-client-httpclient</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>oauth2-oidc-sdk</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons-lang.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.gs.ti.ci.credvault</groupId>-->
-<!--            <artifactId>credential-lookup</artifactId>-->
-<!--            <version>3.1.0.0</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>commons-logging</groupId>-->
-<!--                    <artifactId>commons-logging</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-api</artifactId>-->
-<!--            <version>${slf4j2.version}</version>-->
-<!--        </dependency>-->
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-            <version>4.13.1</version>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.gs.alloy.lakehouse</groupId>-->
-<!--            <artifactId>alloy-lakehouse-common-security-oauth</artifactId>-->
-<!--        </dependency>-->
-    </dependencies>
-</project>
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-transformation-pure:jar:1.0-SNAPSHOT
+[WARNING] 'dependencyManagement.dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-protocol:jar -> duplicate declaration of version ${project.version} @ com.gs.alloy.lakehouse:alloy-lakehouse:1.0-SNAPSHOT, /local/data/scratch/projects/alloy-lakehouse/pom.xml, line 323, column 25
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] --< com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-transformation-pure >--
+[INFO] Building alloy-lakehouse-dataProduct-transformation-pure 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.0:tree (default-cli) @ alloy-lakehouse-dataProduct-transformation-pure ---
+[INFO] com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-transformation-pure:jar:1.0-SNAPSHOT
+[INFO] +- org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.16.0:compile (version managed from 3.5)
+[INFO] |  \- org.antlr:antlr4-runtime:jar:4.8-1:compile
+[INFO] +- org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m3-bootstrap-generator:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.slf4j:slf4j-api:jar:2.0.16:compile (version managed from 1.7.36)
+[INFO] |  +- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  +- com.googlecode.json-simple:json-simple:jar:1.1.1:compile
+[INFO] |  |  \- (junit:junit:jar:4.10:compile - omitted for conflict with 4.13.1)
+[INFO] |  +- commons-codec:commons-codec:jar:1.17.1:compile (version managed from 1.15)
+[INFO] |  +- commons-io:commons-io:jar:2.7:compile
+[INFO] |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.5; omitted for duplicate)
+[INFO] |  +- io.prometheus:simpleclient:jar:0.8.1:compile
+[INFO] |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile (version managed from 2.10.5)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-bootstrap-generator:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.apache.httpcomponents:httpclient:jar:4.5.14:compile - version managed from 4.5.13; omitted for duplicate)
+[INFO] |  |  +- (org.apache.httpcomponents:httpcore:jar:4.4.16:compile - version managed from 4.4.9; omitted for duplicate)
+[INFO] |  |  +- (commons-codec:commons-codec:jar:1.17.1:compile - version managed from 1.15; omitted for duplicate)
+[INFO] |  |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- com.google.guava:guava:jar:30.0-jre:compile (version managed from 30.0-jre)
+[INFO] |  |  +- com.google.guava:failureaccess:jar:1.0.1:compile
+[INFO] |  |  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:compile
+[INFO] |  |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile (version managed from 3.0.2)
+[INFO] |  |  +- org.checkerframework:checker-qual:jar:3.5.0:compile
+[INFO] |  |  +- com.google.errorprone:error_prone_annotations:jar:2.29.2:compile (version managed from 2.3.4)
+[INFO] |  |  \- com.google.j2objc:j2objc-annotations:jar:1.3:compile
+[INFO] |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile (version managed from 2.10.5)
+[INFO] |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  +- (com.googlecode.json-simple:json-simple:jar:1.1.1:compile - omitted for duplicate)
+[INFO] |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.5; omitted for duplicate)
+[INFO] |  +- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- io.github.classgraph:classgraph:jar:4.8.25:compile
+[INFO] |  +- io.opentracing:opentracing-api:jar:0.32.0:compile
+[INFO] |  +- io.opentracing:opentracing-util:jar:0.32.0:compile
+[INFO] |  |  +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  |  \- (io.opentracing:opentracing-noop:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  +- io.opentracing:opentracing-noop:jar:0.32.0:compile
+[INFO] |  |  \- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  \- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] +- org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.pure:legend-pure-runtime-java-engine-interpreted:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.5; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-standard-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-relation-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-relation:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-relation-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-tds-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- io.deephaven:deephaven-csv:jar:0.12.0:compile
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-relation:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (io.deephaven:deephaven-csv:jar:0.12.0:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  \- (org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  \- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-tds:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- org.mongodb:bson:jar:3.12.8:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-shared-structures:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (javax.ws.rs:javax.ws.rs-api:jar:2.0.1:compile - omitted for duplicate)
+[INFO] |  |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.7; omitted for duplicate)
+[INFO] |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  |  +- (io.opentracing:opentracing-util:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  |  +- io.zipkin.reporter2:zipkin-reporter:jar:2.15.0:compile
+[INFO] |  |  |  \- io.zipkin.zipkin2:zipkin:jar:2.21.1:compile
+[INFO] |  |  +- (io.prometheus:simpleclient:jar:0.8.1:compile - omitted for duplicate)
+[INFO] |  |  +- (org.apache.httpcomponents:httpclient:jar:4.5.14:compile - version managed from 4.5.13; omitted for duplicate)
+[INFO] |  |  +- (org.apache.httpcomponents:httpcore:jar:4.4.16:compile - version managed from 4.4.13; omitted for duplicate)
+[INFO] |  |  +- org.pac4j:pac4j-core:jar:4.5.8:compile
+[INFO] |  |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.30; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- org.finos.legend.engine:legend-engine-xt-identity-pac4j:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |     +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |     +- (org.pac4j:pac4j-core:jar:4.5.8:compile - omitted for duplicate)
+[INFO] |  |     +- org.finos.legend.shared:legend-shared-pac4j-kerberos:jar:0.27.0:compile
+[INFO] |  |     |  +- org.pac4j:pac4j-kerberos:jar:4.5.8:compile
+[INFO] |  |     |  |  \- (org.pac4j:pac4j-core:jar:4.5.8:compile - omitted for duplicate)
+[INFO] |  |     |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  |     |  \- org.finos.legend.shared:legend-shared-pac4j:jar:0.27.0:compile
+[INFO] |  |     |     +- (org.pac4j:pac4j-core:jar:4.5.8:compile - omitted for duplicate)
+[INFO] |  |     |     +- org.pac4j:dropwizard-pac4j:jar:6.0.0:compile (version managed from 4.0.0)
+[INFO] |  |     |     |  +- org.pac4j:pac4j-config:jar:5.7.1:compile
+[INFO] |  |     |     |  |  \- (com.zaxxer:HikariCP:jar:6.3.0:compile - version managed from 5.0.1; omitted for duplicate)
+[INFO] |  |     |     |  +- org.pac4j:jersey3-pac4j:jar:6.0.0:compile
+[INFO] |  |     |     |  |  \- org.pac4j.jax-rs:core:jar:6.0.0:compile
+[INFO] |  |     |     |  |     \- jakarta.inject:jakarta.inject-api:jar:2.0.1.MR:compile
+[INFO] |  |     |     |  \- org.pac4j:jakartaee-pac4j:jar:7.1.0:compile
+[INFO] |  |     |     |     \- org.pac4j:pac4j-jakartaee:jar:5.6.0:compile
+[INFO] |  |     |     +- org.commonjava.mimeparse:mimeparse:jar:0.1.3.3:compile
+[INFO] |  |     |     +- (commons-lang:commons-lang:jar:2.6:compile - omitted for duplicate)
+[INFO] |  |     |     +- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.17.2:compile (version managed from 2.11.2)
+[INFO] |  |     |     |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     |     |  +- org.yaml:snakeyaml:jar:2.2:compile
+[INFO] |  |     |     |  \- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     |     +- (javax.ws.rs:javax.ws.rs-api:jar:2.1.1:compile - omitted for conflict with 2.0.1)
+[INFO] |  |     |     +- (com.google.guava:guava:jar:30.0-jre:compile - version managed from 30.0-jre; omitted for duplicate)
+[INFO] |  |     |     +- org.mongodb:mongo-java-driver:jar:3.12.8:compile
+[INFO] |  |     |     +- com.hazelcast:hazelcast:jar:5.3.1:compile
+[INFO] |  |     |     \- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.1; omitted for duplicate)
+[INFO] |  |     +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |     +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |     \- org.finos.legend.engine:legend-engine-xt-identity-kerberos:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |        +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |        +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |        \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-relationalStore-PCT:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-executionPlan-connection:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-identity-middletier:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  \- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-identity-plainTextUserPassword:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  \- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-identity-apiToken:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  \- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-identity-oauth:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  |  |  \- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-kerberos:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-shared-vault-core:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-executionPlan-connection-authentication:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-vault-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-middletier:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-plainTextUserPassword:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- org.finos.legend.engine:legend-engine-executionPlan-execution-authorizer:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  |  |  +- org.finos.legend.engine:legend-engine-xt-authentication-implementation-core:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- org.finos.legend.engine:legend-engine-xt-authentication-protocol:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-plainTextUserPassword:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  |  +- org.finos.legend.engine:legend-engine-xt-identity-privateKey:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  |  |  \- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-apiToken:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-xt-identity-oauth:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  \- (org.finos.legend.engine:legend-engine-xt-identity-kerberos:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.slf4j:jcl-over-slf4j:jar:2.0.16:runtime - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- com.zaxxer:HikariCP:jar:6.3.0:compile (version managed from 4.0.3)
+[INFO] |  |  |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  |  +- io.dropwizard.metrics:metrics-core:jar:4.1.16:compile
+[INFO] |  |  |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.30; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-h2-execution-2.1.214:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  +- com.databricks:databricks-jdbc:jar:2.6.27:runtime
+[INFO] |  |  |  +- com.microsoft.sqlserver:mssql-jdbc:jar:6.2.1.jre7:runtime
+[INFO] |  |  |  +- org.postgresql:postgresql:jar:42.7.3:runtime (version managed from 42.7.4; scope managed from runtime)
+[INFO] |  |  |  |  \- (org.checkerframework:checker-qual:jar:3.42.0:runtime - omitted for conflict with 3.5.0)
+[INFO] |  |  |  +- (io.opentracing:opentracing-util:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  |  |  +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.7; omitted for duplicate)
+[INFO] |  |  |  +- (org.apache.commons:commons-text:jar:1.12.0:compile - version managed from 1.10.0; omitted for duplicate)
+[INFO] |  |  |  +- (commons-codec:commons-codec:jar:1.17.1:compile - version managed from 1.15; omitted for duplicate)
+[INFO] |  |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-grammar:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-language-pure-grammar:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-external-format-compiler:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- org.finos.legend.engine:legend-engine-external-format-core:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.antlr:antlr4-runtime:jar:4.8-1:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:runtime - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  |  +- (org.apache.commons:commons-lang3:jar:3.16.0:runtime - version managed from 3.7; omitted for duplicate)
+[INFO] |  |  |  \- org.finos.legend.engine:legend-engine-xt-relationalStore-snowflake-protocol:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |     +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |     +- (org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |     +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |     \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  \- org.finos.legend.engine:legend-engine-test-framework:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |     +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |     +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |     +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |     +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |     +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |     +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |     +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |     +- (io.opentracing:opentracing-util:jar:0.32.0:runtime - omitted for duplicate)
+[INFO] |  |     +- (io.opentracing:opentracing-noop:jar:0.32.0:runtime - omitted for duplicate)
+[INFO] |  |     \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.mongodb:bson:jar:3.12.8:compile - omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  \- org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-path-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-store-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-path:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |     +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |     +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |     +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |     +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |     +- (io.opentracing:opentracing-util:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |     +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |     \- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.7; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.pure:legend-pure-m2-dsl-diagram-pure:jar:5.52.4:compile
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-path-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-store-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (io.deephaven:deephaven-csv:jar:0.12.0:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-platform-dsl-diagram-java:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-diagram-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-platform-dsl-tds-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-standard-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (com.googlecode.json-simple:json-simple:jar:1.1.1:runtime - omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-shared-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-path:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-platform-dsl-path-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-tds:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-diagram:jar:5.52.4:runtime
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-diagram-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-unclassified:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- org.bouncycastle:bcprov-jdk15on:jar:1.67:compile
+[INFO] |  |  \- (commons-codec:commons-codec:jar:1.17.1:compile - version managed from 1.15; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  +- (io.opentracing:opentracing-util:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |  +- (commons-codec:commons-codec:jar:1.17.1:compile - version managed from 1.15; omitted for duplicate)
+[INFO] |  +- org.apache.commons:commons-text:jar:1.12.0:compile (version managed from 1.10.0)
+[INFO] |  |  \- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.14.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  \- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-language-pure-grammar:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-runtime-java-extension-shared-store-relational:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- org.apache.tomcat:tomcat-dbcp:jar:10.0.4:compile
+[INFO] |  |  |  \- org.apache.tomcat:tomcat-juli:jar:10.0.4:compile
+[INFO] |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- org.slf4j:jcl-over-slf4j:jar:2.0.16:runtime (version managed from 1.7.36)
+[INFO] |  |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:runtime - version managed from 2.0.16; omitted for duplicate)
+[INFO] |  |  +- org.apache.commons:commons-csv:jar:1.5:compile
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m3-precisePrimitives:jar:5.52.4:compile (version managed from 5.52.4)
+[INFO] |  |  \- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.pure:legend-pure-m2-store-relational-grammar:jar:5.52.4:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-precisePrimitives:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-precisePrimitives:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-functions-relation-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-language-pure-dsl-service-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-data-space-pure-metamodel:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-xt-diagram-pure-metamodel:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-json-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-language-pure-dsl-generation-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-relation:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-tds-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-tds:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-sqlDialectTranslation-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-sqlDialectTranslation-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-diagram:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-path:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  \- org.finos.legend.engine:legend-engine-test-mft:jar:4.90.2-SNAPSHOT:compile
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |     +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |     +- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |     +- (io.opentracing:opentracing-api:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |     +- (io.opentracing:opentracing-noop:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |     +- (io.opentracing:opentracing-util:jar:0.32.0:compile - omitted for duplicate)
+[INFO] |     +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |     +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |     \- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:runtime
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-pure:jar:1.0-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-protocol-generation-pure:jar:4.90.2-SNAPSHOT:runtime (version managed from 4.90.2-SNAPSHOT; scope not updated to runtime)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-store-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-javaGeneration-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-standard-pure:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-javaGeneration-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-xt-javaGeneration-pure:jar:4.90.2-SNAPSHOT:runtime
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-shared:jar:5.52.4:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:runtime - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  |  |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:runtime - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:runtime - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:runtime - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-pure:jar:1.0-SNAPSHOT:compile
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-pure:jar:1.0-SNAPSHOT:compile - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:runtime - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile
+[INFO] +- org.eclipse.collections:eclipse-collections:jar:10.2.0:compile
+[INFO] |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-sqlDialectTranslation-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-code-core-extension:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-sqlDialectTranslation-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-xt-relationalStore-snowflake-pure:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-graph-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-dsl-path-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m2-store-relational-pure:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational:jar:5.52.4:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-code-compiled-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-store-relational-java:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-standard:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:compile - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-conversion:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.7; omitted for duplicate)
+[INFO] |  +- (com.googlecode.json-simple:json-simple:jar:1.1.1:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] +- org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-json:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:compile - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-functions-json-pure:jar:4.90.2-SNAPSHOT:runtime - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-unclassified:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-conversion:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (com.googlecode.json-simple:json-simple:jar:1.1.1:compile - omitted for duplicate)
+[INFO] |  \- (junit:junit:jar:4.13.1:runtime - omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-compiler:jar:1.0-SNAPSHOT:test
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-grammar:jar:1.0-SNAPSHOT:test (version managed from 1.0-SNAPSHOT)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-language-pure-grammar:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:test - omitted for duplicate)
+[INFO] |  |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-protocol:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.antlr:antlr4-runtime:jar:4.8-1:test - omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.slf4j:slf4j-api:jar:2.0.16:test - version managed from 2.0.16; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-precise-primitives:jar:1.0-SNAPSHOT:test (version managed from 1.0-SNAPSHOT)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  \- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-matView-protocol:jar:1.0-SNAPSHOT:test
+[INFO] |  |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-protocol:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |  \- com.gs.alloy.lakehouse:alloy-lakehouse-common-object-mapper:jar:1.0-SNAPSHOT:test (version managed from 1.0-SNAPSHOT)
+[INFO] |  |     +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     +- jakarta.validation:jakarta.validation-api:jar:3.1.0:test (version managed from 3.1.0)
+[INFO] |  |     +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.17.2:test (version managed from 2.17.2)
+[INFO] |  |     |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.17.2:test (version managed from 2.17.2)
+[INFO] |  |     |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     |  \- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |     +- org.hibernate.validator:hibernate-validator:jar:8.0.1.Final:test (version managed from 8.0.1.Final)
+[INFO] |  |     |  +- (jakarta.validation:jakarta.validation-api:jar:3.1.0:test - version managed from 3.0.2; omitted for duplicate)
+[INFO] |  |     |  +- org.jboss.logging:jboss-logging:jar:3.4.3.Final:test
+[INFO] |  |     |  \- com.fasterxml:classmate:jar:1.5.1:test
+[INFO] |  |     +- org.glassfish.expressly:expressly:jar:5.0.0:test (version managed from 5.0.0)
+[INFO] |  |     |  \- jakarta.el:jakarta.el-api:jar:5.0.0:test
+[INFO] |  |     +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |     \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol-generation-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-pure:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-protocol:jar:1.0-SNAPSHOT:test (version managed from 1.0-SNAPSHOT)
+[INFO] |  |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-common-object-mapper:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- org.finos.legend.engine:legend-engine-executionPlan-dependencies:jar:4.90.2-SNAPSHOT:test (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  |  |  +- org.finos.legend.engine:legend-engine-shared-javaCompiler:jar:4.90.2-SNAPSHOT:test
+[INFO] |  |  |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  |  +- org.codehaus.janino:janino:jar:3.1.0:test
+[INFO] |  |  |  |  |  \- (org.codehaus.janino:commons-compiler:jar:3.1.0:test - omitted for duplicate)
+[INFO] |  |  |  |  +- org.codehaus.janino:commons-compiler:jar:3.1.0:test
+[INFO] |  |  |  |  \- (io.github.classgraph:classgraph:jar:4.8.25:test - omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  |  +- (commons-codec:commons-codec:jar:1.17.1:test - version managed from 1.15; omitted for duplicate)
+[INFO] |  |  |  +- (org.apache.commons:commons-text:jar:1.12.0:test - version managed from 1.10.0; omitted for duplicate)
+[INFO] |  |  |  +- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:2.10.5:test
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  +- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.10.5:test
+[INFO] |  |  |  |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  |  |  |  +- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.2:test
+[INFO] |  |  |  |  |  |  \- (jakarta.activation:jakarta.activation-api:jar:1.2.1:test - omitted for duplicate)
+[INFO] |  |  |  |  |  \- jakarta.activation:jakarta.activation-api:jar:1.2.1:test
+[INFO] |  |  |  |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:test
+[INFO] |  |  |  |  \- com.fasterxml.woodstox:woodstox-core:jar:6.2.1:test
+[INFO] |  |  |  |     \- (org.codehaus.woodstox:stax2-api:jar:4.2.1:test - omitted for duplicate)
+[INFO] |  |  |  \- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:test - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (org.slf4j:slf4j-api:jar:2.0.16:test - version managed from 2.0.16; omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-grammar:jar:1.0-SNAPSHOT:test
+[INFO] |  +- org.finos.legend.engine:legend-engine-language-pure-grammar:jar:4.90.2-SNAPSHOT:compile (version managed from 4.90.2-SNAPSHOT)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-extensions:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:compile - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-identity-core:jar:4.90.2-SNAPSHOT:compile - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.antlr:antlr4-runtime:jar:4.8-1:compile - omitted for duplicate)
+[INFO] |  |  +- (org.slf4j:slf4j-api:jar:2.0.16:compile - version managed from 1.7.36; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:compile - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile - version managed from 2.10.5.1; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.10.5; omitted for duplicate)
+[INFO] |  |  +- (org.apache.commons:commons-text:jar:1.12.0:compile - version managed from 1.10.0; omitted for duplicate)
+[INFO] |  |  \- (org.apache.commons:commons-lang3:jar:3.16.0:compile - version managed from 3.7; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:test - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-protocol:jar:1.0-SNAPSHOT:test (version managed from 1.0-SNAPSHOT)
+[INFO] |  |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-privacy-pure:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:test - omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (org.finos.legend.engine:legend-engine-executionPlan-dependencies:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  |  \- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.antlr:antlr4-runtime:jar:4.8-1:test - omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  \- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test - version managed from 2.17.2; omitted for duplicate)
+[INFO] +- com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-compiler:jar:1.0-SNAPSHOT:test
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-pure:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-protocol:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-compiler:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m4:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-m3-core:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.pure:legend-pure-runtime-java-engine-compiled:jar:5.52.4:test - version managed from 5.52.4; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol:jar:4.90.2-SNAPSHOT:test - omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-protocol-pure:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-language-pure-compiler:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-pure-platform-java:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections-api:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (org.eclipse.collections:eclipse-collections:jar:10.2.0:test - version managed from 10.2.0; omitted for duplicate)
+[INFO] |  +- (com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-model-grammar:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] |  +- (org.finos.legend.engine:legend-engine-shared-core:jar:4.90.2-SNAPSHOT:test - version managed from 4.90.2-SNAPSHOT; omitted for duplicate)
+[INFO] |  \- (com.gs.alloy.lakehouse:alloy-lakehouse-ingest-model-grammar:jar:1.0-SNAPSHOT:test - version managed from 1.0-SNAPSHOT; omitted for duplicate)
+[INFO] +- com.gs.safeguard:safeguard-client:jar:2.1.0:compile
+[INFO] |  +- com.gs.safeguard:safeguard-core:jar:2.1.0:compile
+[INFO] |  |  \- (com.gs.ti.ci.authn:gsauthnj-core:jar:4.5.7:compile - version managed from 4.5.7; omitted for duplicate)
+[INFO] |  \- com.gs.ti.ci.authn:gsauthnj-core:jar:4.5.7:compile (version managed from 4.5.7)
+[INFO] +- com.gs.safeguard:safeguard-client-httpclient:jar:2.1.0:compile
+[INFO] |  +- (com.gs.safeguard:safeguard-client:jar:2.1.0:compile - version managed from 2.1.0; omitted for duplicate)
+[INFO] |  \- (org.apache.httpcomponents:httpclient:jar:4.5.14:compile - version managed from 4.5.5; omitted for duplicate)
+[INFO] +- com.nimbusds:oauth2-oidc-sdk:jar:11.16:compile
+[INFO] |  +- com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile
+[INFO] |  +- com.nimbusds:content-type:jar:2.3:compile
+[INFO] |  +- net.minidev:json-smart:jar:2.5.1:compile
+[INFO] |  |  \- net.minidev:accessors-smart:jar:2.5.1:compile
+[INFO] |  |     \- org.ow2.asm:asm:jar:9.6:compile
+[INFO] |  +- com.nimbusds:lang-tag:jar:1.7:compile
+[INFO] |  \- com.nimbusds:nimbus-jose-jwt:jar:9.37.1:compile (version managed from 9.40)
+[INFO] |     \- (com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile - omitted for duplicate)
+[INFO] +- commons-lang:commons-lang:jar:2.6:compile
+[INFO] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[INFO] |  +- (com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile - version managed from 2.17.2; omitted for duplicate)
+[INFO] |  \- (com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile - version managed from 2.17.2; omitted for duplicate)
+[INFO] +- org.apache.httpcomponents:httpclient:jar:4.5.14:compile
+[INFO] |  \- (org.apache.httpcomponents:httpcore:jar:4.4.16:compile - version managed from 4.4.16; omitted for duplicate)
+[INFO] +- org.apache.httpcomponents:httpcore:jar:4.4.16:compile
+[INFO] +- javax.ws.rs:javax.ws.rs-api:jar:2.0.1:compile
+[INFO] \- junit:junit:jar:4.13.1:test (scope not updated to compile)
+[INFO]    \- org.hamcrest:hamcrest-core:jar:2.2:test (version managed from 1.3; scope managed from compile)
+[INFO]       \- org.hamcrest:hamcrest:jar:2.2:test (version managed from 2.2; scope managed from compile)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.628 s
+[INFO] Finished at: 2025-07-24T13:57:44-04:00
+[INFO] ------------------------------------------------------------------------
