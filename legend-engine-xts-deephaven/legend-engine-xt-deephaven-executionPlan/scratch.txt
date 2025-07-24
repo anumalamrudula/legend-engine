@@ -1,98 +1,486 @@
-{
-  "_type": "simple",
-  "rootExecutionNode": {
-    "_type": "relationalBlock",
-    "executionNodes": [
-      {
-        "_type": "sql",
-        "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
-      },
-      {
-        "_type": "lake",
-        "executionNodes": [
-          {
-            "_type": "allocation",
-            "executionNodes": [
-              {
-                "_type": "relationalBlock",
-                "executionNodes": [
-                  {
-                    "_type": "sql",
-                    "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
-                  },
-                  {
-                    "_type": "relationalTdsInstantiation",
-                    "executionNodes": [
-                      {
-                        "_type": "sql",
-                        "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
-                        "sqlQuery": "select \"root\".datasource_name as \"storeName\", \"root\".dataset_name as \"datasetName\" from metadata1 as \"root\""
-                      }
-                    ]
-                  }
-                ],
-                "finallyExecutionNodes": [
-                  {
-                    "_type": "sql",
-                    "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "_type": "lake",
-        "executionNodes": [
-          {
-            "_type": "allocation",
-            "executionNodes": [
-              {
-                "_type": "relationalBlock",
-                "executionNodes": [
-                  {
-                    "_type": "sql",
-                    "sqlQuery": "ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';"
-                  },
-                  {
-                    "_type": "relationalTdsInstantiation",
-                    "executionNodes": [
-                      {
-                        "_type": "sql",
-                        "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
-                        "sqlQuery": "select \"root\".DATASTORE as \"storeName\", \"root\".DATASET as \"datasetName\" from metadata2 as \"root\""
-                      }
-                    ]
-                  }
-                ],
-                "finallyExecutionNodes": [
-                  {
-                    "_type": "sql",
-                    "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "_type": "relationalTdsInstantiation",
-        "executionNodes": [
-          {
-            "_type": "sql",
-            "sqlComment": "-- \"executionTraceID\" : \"${execID}\"",
-            "sqlQuery": "select \"root\".DATE as \"OrderDate\" from ACTIVITY as \"root\" "
-          }
-        ]
-      }
-    ],
-    "finallyExecutionNodes": [
-      {
-        "_type": "sql",
-        "sqlQuery": "ALTER SESSION UNSET QUERY_TAG;"
-      }
-    ]
-  }
-}
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>com.gs.alloy.lakehouse</groupId>
+        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alloy-lakehouse-dataProduct-transformation-pure</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
+                <configuration>
+                    <sourceDirectory>src/main/resources</sourceDirectory>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                    <repositories>
+                        <repository>core_data_product_transformation</repository>
+                    </repositories>
+                    <extraRepositories>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_data_product_transformation.definition.json
+                        </extraRepository>
+                    </extraRepositories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build-pure-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-protocol-generation-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-json-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_data_product_transformation</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-protocol-generation-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.gs.alloy.lakehouse</groupId>
+                        <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-json-pure</artifactId>
+                        <version>${legend.engine.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/target/generated-sources/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-duckdb-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                            <ignoredUsedUndeclaredDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-store-relational</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
+                                <dependency>com.hazelcast:hazelcast</dependency>
+                            </ignoredUsedUndeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <trimStackTrace>false</trimStackTrace>
+                    <useUnlimitedThreads>true</useUnlimitedThreads>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <properties>
+        <!-- java version override so that Alloy can import these modules-->
+        <maven.compiler.release>11</maven.compiler.release>
+        <antlr.version>4.8-1</antlr.version>
+        <guava.version>30.0-jre</guava.version>
+        <commons-lang.version>2.6</commons-lang.version>
+    </properties>
+
+    <dependencies>
+        <!-- LEGEND -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+            <version>${legend.pure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+            <version>${legend.pure.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+            <version>${legend.pure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.pure</groupId>-->
+        <!--            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>-->
+        <!--            <version>${legend.pure.version}</version>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
+            <version>${legend.pure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <!-- LEGEND -->
+
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-privacy-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>-->
+<!--            <version>${legend.engine.version}</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+            <version>${legend.engine.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-json</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-compiler</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-compiler</artifactId>
+            <scope>test</scope>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.gs.safeguard</groupId>
+            <artifactId>safeguard-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.safeguard</groupId>
+            <artifactId>safeguard-client-httpclient</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>${commons-lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.gs.ti.ci.credvault</groupId>-->
+<!--            <artifactId>credential-lookup</artifactId>-->
+<!--            <version>3.1.0.0</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>commons-logging</groupId>-->
+<!--                    <artifactId>commons-logging</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-api</artifactId>-->
+<!--            <version>${slf4j2.version}</version>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <version>4.13.1</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.gs.alloy.lakehouse</groupId>-->
+<!--            <artifactId>alloy-lakehouse-common-security-oauth</artifactId>-->
+<!--        </dependency>-->
+    </dependencies>
+</project>
