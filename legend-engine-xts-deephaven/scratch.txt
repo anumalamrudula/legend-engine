@@ -1,3 +1,9 @@
+parser grammar LakehouseMappingParserGrammar;
+
+import M3ParserGrammar, RelationalParserGrammar;
+
+
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
  Copyright 2020 Goldman Sachs
