@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.90.1-SNAPSHOT</version>
+        <version>4.96.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -154,6 +154,16 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-format-grammar</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-tds-compiler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-tds-grammar</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- ENGINE -->
 
@@ -486,6 +496,21 @@
         </dependency>
         <!-- Peristence -->
 
+        <!-- DataQuality -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-protocol</artifactId>
+        </dependency>
+        <!-- DataQuality -->
+
         <!-- Dataspace -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -645,7 +670,11 @@
         <!-- SQL -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+            <artifactId>legend-engine-xt-sql-expression-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-expression-compiler</artifactId>
         </dependency>
         <!-- SQL -->
 
