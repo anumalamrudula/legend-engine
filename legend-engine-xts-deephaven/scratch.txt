@@ -1,251 +1,186 @@
-package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
+[INFO] Processing grammar: com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4
+[ERROR] error(110): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:3:24: can't find or load grammar RelationalParserGrammar
+[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [3:24]: can't find or load grammar RelationalParserGrammar
+[ERROR] error(56): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:31:70: reference to undefined rule: operation
+[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [31:70]: reference to undefined rule: operation
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
 
-import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
-import org.antlr.v4.runtime.CharStream;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
-import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.gs.alloy.lakehouse</groupId>
+        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-public class LakehouseClassMappingParseTreeWalker
-{
-    private final CharStream input;
-    private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final PureGrammarParserContext parserContext;
+    <artifactId>alloy-lakehouse-dataProduct-transformation-grammar</artifactId>
+    <packaging>jar</packaging>
 
-    public LakehouseClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
-    {
-        this.input = input;
-        this.walkerSourceInformation = walkerSourceInformation;
-        this.parserContext = parserContext;
-    }
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-antlr-core-grammar</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-language-pure-grammar</artifactId>
+                                    <version>${legend.engine.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+                                    <version>${legend.engine.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.8-1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
+                            <libDirectory>target/antlr</libDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-java:jar</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-    private String visitDatabasePointer(LakehouseMappingParserGrammar.DatabasePointerContext ctx)
-    {
-        return ctx != null ? PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) : null;
-    }
+    <properties>
+        <!-- java version override so that Alloy can import these modules-->
+        <maven.compiler.release>11</maven.compiler.release>
+        <antlr.version>4.8-1</antlr.version>
+        <guava.version>30.0-jre</guava.version>
+        <commons-lang.version>2.6</commons-lang.version>
+    </properties>
 
-    private String visitMappingScopeInfo(LakehouseMappingParserGrammar.MappingScopeInfoContext ctx)
-    {
-        return ctx != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : null;
-    }
+    <dependencies>
 
-    public void visitLakehouseClassMapping(LakehouseMappingParserGrammar.LakehouseClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
-    {
-        if (ctx.ingestSrc() != null)
-        {
-            IngestRelationAccessor tmp = new IngestRelationAccessor();
-            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.ingestSrc().databasePointer()), ctx.ingestSrc().qualifiedName().getText());
-            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestSrc());
-            lakehouseClassMapping.ingestPtr = tmp;
-        }
-        lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
-    }
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
 
-    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
-    {
-        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
-        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        PropertyPointer propertyPointer = new PropertyPointer();
-        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(0));
-        propertyPointer._class = lakehouseClassMapping._class;
-        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        propertyMapping.property = propertyPointer;
-        propertyMapping.source = lakehouseClassMapping.id;
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-transformation-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-        // Parse the operation
-        propertyMapping.relationalOperation = visitOperation(ctx.operation(), lakehouseClassMapping.ingestPtr);
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+            <version>${antlr.version}</version>
+        </dependency>
 
-        return propertyMapping;
-    }
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
 
-    private RelationalOperationElement visitOperation(RelationalParserGrammar.OperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.booleanOperation() != null)
-        {
-            return visitBooleanOperation(ctx.booleanOperation(), ingestPtr);
-        }
-        else if (ctx.joinOperation() != null)
-        {
-            throw new EngineException("Join operations are not supported in Lakehouse mappings", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitBooleanOperation(RelationalParserGrammar.BooleanOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        RelationalOperationElement operationElement = visitAtomicOperation(ctx.atomicOperation(), ingestPtr);
-        if (ctx.booleanOperationRight() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = ctx.booleanOperationRight().booleanOperator().AND() != null ? "and" : "or";
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(operationElement);
-            RelationalOperationElement right = visitOperation(ctx.booleanOperationRight().operation(), ingestPtr);
-            operation.parameters.add(right);
-            return operation;
-        }
-        return operationElement;
-    }
-
-    private RelationalOperationElement visitAtomicOperation(RelationalParserGrammar.AtomicOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        RelationalOperationElement operationElement = null;
-        if (ctx.groupOperation() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = "group";
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(visitOperation(ctx.groupOperation().operation(), ingestPtr));
-            operationElement = operation;
-        }
-        else if (ctx.functionOperation() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.functionOperation().identifier());
-            operation.parameters = ListIterate.collect(ctx.functionOperation().functionOperationArgument(), argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr));
-            operationElement = operation;
-        }
-        else if (ctx.columnOperation() != null)
-        {
-            operationElement = visitColumnOperation(ctx.columnOperation(), ingestPtr);
-        }
-        else if (ctx.constant() != null)
-        {
-            Literal constant = new Literal();
-            constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            if (ctx.constant().STRING() != null)
-            {
-                constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
-            }
-            else if (ctx.constant().INTEGER() != null)
-            {
-                constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
-            }
-            else if (ctx.constant().FLOAT() != null)
-            {
-                constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
-            }
-            else
-            {
-                throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-            }
-            operationElement = constant;
-        }
-        else if (ctx.joinOperation() != null)
-        {
-            throw new EngineException("Join operations are not supported in Lakehouse mappings", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        if (operationElement == null)
-        {
-            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        operationElement.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.atomicOperationRight() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(operationElement);
-            if (ctx.atomicOperationRight().atomicOperator() != null)
-            {
-                operation.funcName = visitAtomicOperator(ctx.atomicOperationRight().atomicOperator());
-                operation.parameters.add(visitAtomicOperation(ctx.atomicOperationRight().atomicOperation(), ingestPtr));
-            }
-            else if (ctx.atomicOperationRight().atomicSelfOperator() != null)
-            {
-                operation.funcName = visitAtomicSelfOperator(ctx.atomicOperationRight().atomicSelfOperator());
-            }
-            else
-            {
-                throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-            }
-            operationElement = operation;
-        }
-        return operationElement;
-    }
-
-    private String visitAtomicOperator(RelationalParserGrammar.AtomicOperatorContext ctx)
-    {
-        if (ctx.EQUAL() != null) return "equal";
-        if (ctx.GREATER_THAN() != null) return "greaterThan";
-        if (ctx.LESS_THAN() != null) return "lessThan";
-        if (ctx.GREATER_OR_EQUAL() != null) return "greaterThanEqual";
-        if (ctx.LESS_OR_EQUAL() != null) return "lessThanEqual";
-        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null) return "notEqual";
-        throw new EngineException("Unsupported operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private String visitAtomicSelfOperator(RelationalParserGrammar.AtomicSelfOperatorContext ctx)
-    {
-        if (ctx.IS_NULL() != null) return "isNull";
-        if (ctx.IS_NOT_NULL() != null) return "isNotNull";
-        throw new EngineException("Unsupported self operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitFunctionOperationArgument(RelationalParserGrammar.FunctionOperationArgumentContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.operation() != null)
-        {
-            return visitOperation(ctx.operation(), ingestPtr);
-        }
-        throw new EngineException("Unsupported function argument syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitColumnOperation(RelationalParserGrammar.ColumnOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget() != null)
-        {
-            return visitTableAliasColumnOperationWithTarget(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget(), ingestPtr);
-        }
-        else if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo() != null)
-        {
-            return visitTableAliasColumnOperationWithScopeInfo(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo(), ingestPtr);
-        }
-        throw new EngineException("Unsupported column operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithTarget(RelationalParserGrammar.TableAliasColumnOperationWithTargetContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor.path = Lists.mutable.with(ingestPtr.path.get(0), ctx.TARGET().getText());
-        column.Column = ctx.relationalIdentifier().QUOTED_STRING() == null ? ctx.relationalIdentifier().unquotedIdentifier().getText() : ctx.relationalIdentifier().QUOTED_STRING().getText();
-        return column;
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithScopeInfo(RelationalParserGrammar.TableAliasColumnOperationWithScopeInfoContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor.path = Lists.mutable.with(ingestPtr.path.get(0), ctx.relationalIdentifier().getText());
-        if (ctx.scopeInfo() != null && ctx.scopeInfo().relationalIdentifier().size() > 0)
-        {
-            column.Column = ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING() == null ? ctx.scopeInfo().relationalIdentifier(0).unquotedIdentifier().getText() : ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING().getText();
-        }
-        return column;
-    }
-}
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
