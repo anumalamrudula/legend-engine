@@ -1,0 +1,358 @@
+    @Test
+    public void testLakehouseMappingIde()
+    {
+        test("###Lakehouse\n" +
+                "Ingest test::ingest::PersonIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
+                "[\n" +
+                "  Person\n" +
+                "  (\n" +
+                "    last_name:Varchar(200)[1],\n" +
+                "    firm_id:Varchar(200)[1]\n" +
+                "  ) DP10;\n" +
+                "]\n" +
+                "\n" +
+                "###Pure\n" +
+                "import test::model::*;\n" +
+                "import meta::pure::precisePrimitives::*;\n" +
+                "\n" +
+                "Class test::model::Person\n" +
+                "{\n" +
+                "  lastName : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::MyMap\n" +
+                "(\n" +
+                "  test::model::Person : Lakehouse\n" +
+                "  {\n" +
+                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
+                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name)\n" +
+                "  }\n" +
+                ")");
+    }
+
+
+
+
+
+
+lexer grammar LakehouseMappingLexerGrammar;
+
+import M3LexerGrammar;
+
+INGEST_SOURCE_CMD:                          '~ingestSource';
+ACCESS_POINT_SOURCE_CMD:                    '~accessPointSource';
+
+QUOTED_STRING:                              ('"' ( EscSeq | ~["\r\n] )*  '"');
+
+
+
+
+
+
+
+parser grammar LakehouseMappingParserGrammar;
+
+import M3ParserGrammar;
+
+options
+{
+    tokenVocab = LakehouseMappingLexerGrammar;
+}
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+unquotedIdentifier:                         VALID_STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | TO_BYTES_FUNCTION
+                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
+;
+
+identifier:                                 unquotedIdentifier | STRING
+;
+
+// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
+
+lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+                                                (propertyMapping (COMMA propertyMapping)*)?
+                                            EOF
+;
+ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
+;
+accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
+;
+propertyMapping:                            qualifiedName STAR? COLON databasePointer qualifiedName DOT qualifiedName
+;
+mappingScopeInfo:                           unquotedIdentifier
+;
+// -------------------------------------- BUILDING BLOCK --------------------------------------
+
+ scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+ ;
+ databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+ ;
+ relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+ ;
+
+
+
+
+
+
+
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
+
+import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
+import com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar;
+import org.antlr.v4.runtime.CharStream;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.protocol.m3.relation.RelationElementAccessor;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
+
+import java.util.Collections;
+import java.util.List;
+
+public class LakehouseClassMappingParseTreeWalker
+{
+    private final CharStream input;
+    private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserContext parserContext;
+
+    public LakehouseClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
+    {
+        this.input = input;
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.parserContext = parserContext;
+    }
+
+    private String visitDatabasePointer(LakehouseMappingParserGrammar.DatabasePointerContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) : null;
+    }
+
+    private String visitMappingScopeInfo(LakehouseMappingParserGrammar.MappingScopeInfoContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : null;
+    }
+
+    public void visitLakehouseClassMapping(LakehouseMappingParserGrammar.LakehouseClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        if (ctx.ingestSrc() != null)
+        {
+            IngestRelationAccessor tmp = new IngestRelationAccessor();
+            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.ingestSrc().databasePointer()), ctx.ingestSrc().qualifiedName().getText());
+            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestSrc());
+            lakehouseClassMapping.ingestPtr = tmp;
+        }
+        // property mappings (optional)
+        lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
+    }
+
+    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
+        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        PropertyPointer propertyPointer = new PropertyPointer();
+        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(0));
+        propertyPointer._class = lakehouseClassMapping._class;
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        propertyMapping.property = propertyPointer;
+        propertyMapping.source = lakehouseClassMapping.id;
+        propertyMapping.relationalColumn = new IngestRelationColumn();
+        propertyMapping.relationalColumn.ingestAccessor = lakehouseClassMapping.ingestPtr;
+        propertyMapping.relationalColumn.Column = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(2));
+        propertyMapping.property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        return propertyMapping;
+    }
+}
+
+
+
+
+
+
+
+
+
+package com.gs.alloy.lakehouse.runtime.model.grammar.serializer;
+
+import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.runtime.LakehouseRuntime;
+import com.gs.alloy.lakehouse.runtime.model.grammar.parser.LakehouseRuntimeParserExtension;
+import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+
+public class LakehouseRuntimeGrammarComposerExtension implements PureGrammarComposerExtension
+{
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "LakehouseRuntime");
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    {
+        return Collections.singletonList((elements, context, composedSections) ->
+        {
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof PackageableRuntime && ((PackageableRuntime) e).runtimeValue instanceof LakehouseRuntime), Lists.mutable.empty());
+            return composableElements.isEmpty()
+                    ? null
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(element -> renderLakehouseRuntime(((PackageableRuntime) element), context)).makeString("###" + LakehouseRuntimeParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+
+        });
+    }
+
+    private static String renderLakehouseRuntime(PackageableRuntime lakeRuntime, PureGrammarComposerContext context)
+    {
+        String runtimeType = "LakehouseRuntime ";
+        return runtimeType + PureGrammarComposerUtility.convertPath(lakeRuntime.getPath()) + "\n" +
+                "{" +
+                     renderRuntimeValue((LakehouseRuntime) lakeRuntime.runtimeValue, 1) +
+                "\n}";
+    }
+
+    private static String renderRuntimeValue(LakehouseRuntime runtimeValue, int baseIndentation)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (runtimeValue.environment != null && runtimeValue.warehouse != null)
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("environment: '").append(runtimeValue.environment).append("';");
+            appendTabString(builder.append("\n"), baseIndentation).append("warehouse: '").append(runtimeValue.warehouse).append("';");
+        }
+        else if (runtimeValue.environment == null && runtimeValue.warehouse == null && runtimeValue.connectionPointer != null)
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(runtimeValue.connectionPointer.connection)).append(";");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
+    {
+        return Lists.fixedSize.with((elements, context, sectionName) ->
+        {
+            if (!LakehouseRuntimeParserExtension.NAME.equals(sectionName))
+            {
+                return null;
+            }
+            return ListIterate.collect(elements, element ->
+            {
+                if (element instanceof PackageableRuntime)
+                {
+                    return renderLakehouseRuntime((PackageableRuntime) element, context);
+                }
+                return "/* Can't transform element '" + element.getPath() + "' in this section */";
+            }).makeString("\n\n");
+        });
+    }
+
+    @Override
+    public List<Function2<ClassMapping, PureGrammarComposerContext, String>> getExtraClassMappingComposers()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with((classMapping, context) ->
+        {
+            if (classMapping instanceof LakehouseClassMapping)
+            {
+                LakehouseClassMapping lakehouseClassMapping = (LakehouseClassMapping) classMapping;
+                StringBuilder builder = new StringBuilder();
+                builder.append(": ").append(LakehouseRuntimeParserExtension.LAKEHOUSE_MAPPING_ELEMENT_TYPE).append("\n");
+                builder.append(getTabString()).append("{\n");
+                String mapping = renderLakehouseClassMapping(lakehouseClassMapping);
+                builder.append(mapping);
+                builder.append(getTabString()).append("}");
+                return builder.toString();
+            }
+            return null;
+        });
+    }
+
+    private String renderLakehouseClassMapping(LakehouseClassMapping lakehouseClassMapping)
+    {
+            StringBuilder builder = new StringBuilder();
+            if (lakehouseClassMapping.ingestPtr != null)
+            {
+                IngestRelationAccessor tmp = lakehouseClassMapping.ingestPtr;
+                appendTabString(builder, 2).append("~ingestSource ");
+                builder.append("[").append(tmp.path.get(0)).append("]");
+                builder.append(tmp.path.get(1));
+                builder.append("\n");
+            }
+            if (!lakehouseClassMapping.propertyMappings.isEmpty())
+            {
+                builder.append(LazyIterate.collect(lakehouseClassMapping.propertyMappings, propertyMapping ->
+                        renderRelationalPropertyMapping(propertyMapping, false)).makeString(",\n"));
+                builder.append("\n");
+            }
+            return builder.toString();
+        }
+
+    private static boolean checkNullOrEmpty(String string)
+    {
+        return string == null || string.isEmpty();
+    }
+
+    private static String renderRelationalPropertyMapping(PropertyMapping relationalPropertyMapping, Boolean renderSourceId)
+    {
+        String propertyString = getTabString(2) + (relationalPropertyMapping.localMappingProperty != null
+                ? ("+" + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + ": " +
+                relationalPropertyMapping.localMappingProperty.type + "[" +
+                HelperDomainGrammarComposer.renderMultiplicity(relationalPropertyMapping.localMappingProperty.multiplicity) + "]")
+                : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) +
+                (checkNullOrEmpty(relationalPropertyMapping.target) ? "" : "[" + (renderSourceId ?
+                        (checkNullOrEmpty(relationalPropertyMapping.source) ? "" : (relationalPropertyMapping.source + ",")) : "") +
+                        relationalPropertyMapping.target + "]")
+        ) + ": ";
+        String tmp = "[" + ((LakehousePropertyMapping) relationalPropertyMapping).relationalColumn.ingestAccessor.path.get(0) + "]" +
+                ((LakehousePropertyMapping) relationalPropertyMapping).relationalColumn.ingestAccessor.path.get(1) + "." +
+                ((LakehousePropertyMapping) relationalPropertyMapping).relationalColumn.Column;
+        return propertyString + tmp;
+    }
+}
+
+
