@@ -1,1 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.gs.alloy.lakehouse</groupId>
+        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alloy-lakehouse-dataProduct-transformation-grammar</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-antlr-core-grammar</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-language-pure-grammar</artifactId>
+                                    <version>${legend.engine.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+                                    <version>${legend.engine.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.8-1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
+                            <libDirectory>target/antlr</libDirectory>
+<!--                            <libDirectory>${project.build.directory}/antlr/imports</libDirectory>-->
+<!--                            <sourceDirectory>${project.basedir}/src/main/antlr4</sourceDirectory>-->
+<!--                            <includes>-->
+<!--                                <include>**/Lakehouse*.g4</include>-->
+<!--                            </includes>-->
+<!--&lt;!&ndash;                            <excludes>&ndash;&gt;-->
+<!--&lt;!&ndash;                                <exclude>**/Relational*.g4</exclude>&ndash;&gt;-->
+<!--&lt;!&ndash;                                <exclude>**/M3*.g4</exclude>&ndash;&gt;-->
+<!--&lt;!&ndash;                                <exclude>**/Core*.g4</exclude>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </excludes>&ndash;&gt;-->
+<!--                            <visitor>true</visitor>-->
+<!--                            <listener>true</listener>-->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-java:jar</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <properties>
+        <!-- java version override so that Alloy can import these modules-->
+        <maven.compiler.release>11</maven.compiler.release>
+        <antlr.version>4.8-1</antlr.version>
+        <guava.version>30.0-jre</guava.version>
+        <commons-lang.version>2.6</commons-lang.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-transformation-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+            <version>${antlr.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+
+
+
+
 expected /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/target/antlr/RelationalParserGrammar.g4 to be prefixed with /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4
