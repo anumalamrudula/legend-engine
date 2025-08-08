@@ -1,21 +1,580 @@
-[INFO] --- antlr4:4.8-1:antlr4 (default) @ alloy-lakehouse-dataProduct-transformation-grammar ---
-[INFO] ANTLR 4: Processing source directory /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4
-[INFO] Processing grammar: antlr/RelationalLexerGrammar.g4
-[INFO] Processing grammar: antlr/RelationalParserGrammar.g4
-[INFO] Processing grammar: antlr/CoreLexerGrammar.g4
-[INFO] Processing grammar: antlr/CoreParserGrammar.g4
-[ERROR] error(56): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4:3:78: reference to undefined rule: identifier
-[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4 [3:78]: reference to undefined rule: identifier
-[ERROR] error(56): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4:5:48: reference to undefined rule: identifier
-[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4 [5:48]: reference to undefined rule: identifier
-[ERROR] error(56): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4:5:75: reference to undefined rule: identifier
-[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4 [5:75]: reference to undefined rule: identifier
-[ERROR] error(56): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4:11:48: reference to undefined rule: identifier
-[ERROR] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/antlr/CoreParserGrammar.g4 [11:48]: reference to undefined rule: identifier
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  8.289 s (Wall Clock)
-[INFO] Finished at: 2025-08-08T12:52:49-04:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.antlr:antlr4-maven-plugin:4.8-1:antlr4 (default) on project alloy-lakehouse-dataProduct-transformation-grammar: ANTLR 4 caught 4 build errors. -> [Help 1]
+lexer grammar LakehouseMappingLexerGrammar;
+
+import RelationalLexerGrammar;
+
+INGEST_SOURCE_CMD:                          '~ingestSource';
+ACCESS_POINT_SOURCE_CMD:                    '~accessPointSource';
+
+QUOTED_STRING:                              ('"' ( EscSeq | ~["\r\n] )*  '"');
+
+
+
+
+parser grammar LakehouseMappingParserGrammar;
+
+import RelationalParserGrammar;
+
+options
+{
+    tokenVocab = LakehouseMappingLexerGrammar;
+}
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+unquotedIdentifier:                         VALID_STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | TO_BYTES_FUNCTION
+                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
+;
+
+identifier:                                 unquotedIdentifier | STRING
+;
+
+// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
+
+lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+                                                (propertyMapping (COMMA propertyMapping)*)?
+                                            EOF
+;
+ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
+;
+accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
+;
+propertyMapping:                            qualifiedName STAR? COLON operation
+;
+mappingScopeInfo:                           unquotedIdentifier
+;
+// -------------------------------------- BUILDING BLOCK --------------------------------------
+
+ scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+ ;
+ databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+ ;
+ relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+ ;
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.gs.alloy.lakehouse</groupId>
+        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>alloy-lakehouse-dataProduct-transformation-grammar</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-antlr-core-grammar</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+                                    <version>${legend.engine.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+<!--                                    <outputDirectory>${project.basedir}/src/main</outputDirectory>-->
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/src/main/antlr4/imports</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>
+                                        ${project.build.directory}/antlr
+                                    </directory>
+                                    <includes>
+                                        <include>RelationalParserGrammar.g4</include>
+                                        <include>RelationalLexerGrammar.g4</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.8-1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
+                            <includes>
+                                <include>**/Lakehouse*.g4</include>
+                            </includes>
+                            <visitor>true</visitor>
+                            <listener>true</listener>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-java:jar</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <properties>
+        <!-- java version override so that Alloy can import these modules-->
+        <maven.compiler.release>11</maven.compiler.release>
+        <antlr.version>4.8-1</antlr.version>
+        <guava.version>30.0-jre</guava.version>
+        <commons-lang.version>2.6</commons-lang.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-transformation-protocol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+            <version>${antlr.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-grammar</artifactId>
+            <version>${legend.engine.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-ingest-model-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.gs.alloy.lakehouse</groupId>
+            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
+
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2020 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-relationalStore-generation</artifactId>
+        <version>4.96.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+    <packaging>jar</packaging>
+    <name>Legend Engine - XT - Relational Store - Grammar</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-antlr-core-grammar</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.finos.legend.engine</groupId>
+                                    <artifactId>legend-engine-language-pure-grammar</artifactId>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <includes>antlr/*.g4</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <ignoredUnusedDeclaredDependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
+            </plugin>
+            <!-- Package the core ANTLR definition in the JAR so child module can consume -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/classes/antlr</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>
+                                        src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4
+                                    </directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <visitor>true</visitor>
+                            <listener>true</listener>
+                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
+                            <libDirectory>target/antlr</libDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-store</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+        </dependency>
+        <!-- PURE -->
+
+        <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mongodb</groupId>
+                    <artifactId>mongo-java-driver</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-identity-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-compiler</artifactId>
+        </dependency>
+        <!-- ENGINE -->
+
+        <!-- ANTLR -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!-- ANTLR -->
+
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+
+        <!-- For String Manipulation -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- For String Manipulation -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-testable</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+
+        <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->
+    </dependencies>
+</project>
