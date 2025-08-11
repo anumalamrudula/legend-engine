@@ -1,168 +1,399 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>com.gs.alloy.lakehouse</groupId>
-        <artifactId>alloy-lakehouse-dataProduct-transformation</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+/opt/jdk-21-latest/bin/java -Dmaven.multiModuleProjectDirectory=/local/data/scratch/projects/alloy-lakehouse -Djansi.passthrough=true -Xms8G -Xmx16G -Dmaven.home=/opt/intellij/plugins/maven/lib/maven3 -Dclassworlds.conf=/opt/intellij/plugins/maven/lib/maven3/bin/m2.conf -Dmaven.ext.class.path=/opt/intellij/plugins/maven/lib/maven-event-listener.jar -javaagent:/opt/intellij/lib/idea_rt.jar=43127:/opt/intellij/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /opt/intellij/plugins/maven/lib/maven3/boot/plexus-classworlds.license:/opt/intellij/plugins/maven/lib/maven3/boot/plexus-classworlds-2.7.0.jar org.codehaus.classworlds.Launcher -Didea.version=2024.1.7 -T 3 --fail-at-end -s /local/data/scratch/projects/alloy-lakehouse/settings.xml -Dmaven.repo.local=/local/data/scratch/.m2/repository -DskipTests=true clean install -P aws-vanguard,gcp-explorer,local-pioneer,publish-aws-nexus
+Picked up _JAVA_OPTIONS: -Dlegend.engine.testcontainer.registry=dockerhub.site.gs.com:8413 -Dnpm.registry.url=http://npmscopes.site.gs.com
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-transformation-grammar:jar:1.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-dependency-plugin @ line 100, column 21
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-resources-plugin is missing. @ line 50, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] Using the MultiThreadedBuilder implementation with a thread count of 3
+[INFO] 
+[INFO] --< com.gs.alloy.lakehouse:alloy-lakehouse-dataProduct-transformation-grammar >--
+[INFO] Building alloy-lakehouse-dataProduct-transformation-grammar 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] Parameter 'verbose' is unknown for plugin 'antlr4-maven-plugin:4.8-1:antlr4 (default)'
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-modular-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-modular-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-modular-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-store-relational-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-store-relational-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-store-relational-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-mapping-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-mapping-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-mapping-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-store-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-store-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-store-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-language-pure-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-language-pure-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-language-pure-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-language-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-language-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-language-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-base/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-base/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-base/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-shared-extensions/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-shared-extensions/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-shared-extensions/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-shared/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-shared/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-shared/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-shared-structures/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-shared-structures/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-shared-structures/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-protocol-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-protocol-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-protocol-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-shared-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-shared-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-shared-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-identity-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-identity-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-identity-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-identity-pac4j/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-identity-pac4j/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-identity-pac4j/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-identity/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-identity-kerberos/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-identity-kerberos/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-identity-kerberos/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-transformation/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-api/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-api/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-api/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse/1.0-SNAPSHOT/maven-metadata.xml (614 B at 3.7 kB/s)
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse/1.0-SNAPSHOT/maven-metadata.xml (614 B at 3.7 kB/s)
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-main/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-main/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-main/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model/1.0-SNAPSHOT/maven-metadata.xml (627 B at 3.7 kB/s)
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model/1.0-SNAPSHOT/maven-metadata.xml (627 B at 3.3 kB/s)
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest/1.0-SNAPSHOT/maven-metadata.xml (621 B at 3.9 kB/s)
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest/1.0-SNAPSHOT/maven-metadata.xml (621 B at 3.9 kB/s)
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-protocol/1.0-SNAPSHOT/maven-metadata.xml (1.0 kB at 10 kB/s)
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-protocol/1.0-SNAPSHOT/maven-metadata.xml (1.0 kB at 10 kB/s)
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy-pure/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy-pure/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy-pure/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-ingest-model-privacy/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-functions-legendCompiler-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-functions-legendCompiler-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-functions-legendCompiler-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-legendCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-language-pure-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-language-pure-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-language-pure-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-compiled-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-compiled-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-compiled-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-diagram-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-diagram-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-diagram-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-graph-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-graph-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-graph-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-tds-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-tds-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-tds-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-functions-standard-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-functions-standard-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-functions-standard-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-functions-relation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-functions-relation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-functions-relation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-functions-unclassified-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-functions-unclassified-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-functions-unclassified-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-standard/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-relation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-unclassified/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-functions-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-functions-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-functions-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-compiled-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-conversion/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-conversion/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-conversion/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-runtime-java-extension-shared-functions-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-dsl-path-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-dsl-path-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-dsl-path-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-platform-precisePrimitives-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-platform-precisePrimitives-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-platform-precisePrimitives-java/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-common-object-mapper/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-common-object-mapper/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-common-object-mapper/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-common-object-mapper/1.0-SNAPSHOT/maven-metadata.xml (1.0 kB at 7.6 kB/s)
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-common-object-mapper/1.0-SNAPSHOT/maven-metadata.xml (1.0 kB at 7.1 kB/s)
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-common/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-common/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-common/1.0-SNAPSHOT/maven-metadata.xml
+Downloaded from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-common/1.0-SNAPSHOT/maven-metadata.xml (621 B at 4.8 kB/s)
+Downloaded from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-common/1.0-SNAPSHOT/maven-metadata.xml (621 B at 4.6 kB/s)
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-executionPlan-dependencies/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-executionPlan-dependencies/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-executionPlan-dependencies/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-executionPlan-execution/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-executionPlan-execution/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-executionPlan-execution/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-shared-javaCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-shared-javaCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-shared-javaCompiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-relationalStore/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-relationalStore/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-relationalStore/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-core-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-pure-code-core-extension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-pure-code-core-extension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-pure-code-core-extension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-language-pure-dsl-service-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-language-pure-dsl-service-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-language-pure-dsl-service-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-service/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-service/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-service/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-data-space-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-data-space-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-data-space-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-data-space/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-data-space/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-data-space/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-diagram-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-diagram-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-diagram-pure-metamodel/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-diagram/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-diagram/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-diagram/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-json-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-json/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-language-pure-dsl-generation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-language-pure-dsl-generation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-language-pure-dsl-generation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xts-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xts-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xts-generation/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSql/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSql/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSql/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-postgresSqlModel-extensions-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-h2/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-h2/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-h2/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-dbExtension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-dbExtension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-dbExtension/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-test-mft/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-test-mft/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-test-mft/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-testable/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-testable/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-testable/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-external-format-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-external-format-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-external-format-compiler/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-external-format-language/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-external-format-language/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-external-format-language/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-core-external-format/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-core-external-format/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-core-external-format/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-external-format-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-external-format-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-external-format-core/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-grammar/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-pure/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/org/finos/legend/engine/legend-engine-xt-relationalStore-snowflake-protocol/4.96.1-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-grammar/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from project-level-cache: file:///local/data/scratch/projects/alloy-lakehouse/mvn-deploy-dir/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from nexus-snapshots: https://maven.aws.site.gs.com/repository/maven-snapshots/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+Downloading from central-aws: https://maven.aws.site.gs.com/repository/maven-public/com/gs/alloy/lakehouse/alloy-lakehouse-dataProduct-model-protocol/1.0-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] Deleting /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/target
+[INFO] 
+[INFO] --- enforcer:3.4.1:enforce (enforce-maven) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] 
+[INFO] --- enforcer:3.4.1:enforce (enforce) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- dependency:3.8.0:unpack (copy-antlr-core-grammar) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] Configured Artifact: org.finos.legend.engine:legend-engine-language-pure-grammar:4.96.1-SNAPSHOT:jar
+[INFO] Configured Artifact: org.finos.legend.engine:legend-engine-xt-relationalStore-grammar:4.96.1-SNAPSHOT:jar
+[INFO] 
+[INFO] --- jacoco:0.8.13:prepare-agent (jacoco-initialize) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] argLine set to -javaagent:/local/data/scratch/.m2/repository/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar=destfile=/local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/target/jacoco.exec
+[INFO] 
+[INFO] --- resources:3.3.1:copy-resources (copy-resources) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] Copying 7 resources from target/antlr to src/main/antlr4/imports
+[INFO] 
+[INFO] --- antlr4:4.8-1:antlr4 (default) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] ANTLR 4: Processing source directory /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4
+[INFO] Processing grammar: com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingLexerGrammar.g4
+[INFO] Processing grammar: com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseRuntimeLexerGrammar.g4
+[INFO] Processing grammar: com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseRuntimeParserGrammar.g4
+[INFO] Processing grammar: com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4
+[WARNING] warning(109): /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/imports/RelationalParserGrammar.g4:5:0: options ignored in imported grammar RelationalParserGrammar
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4/imports/RelationalParserGrammar.g4 [5:0]: options ignored in imported grammar RelationalParserGrammar
+[ERROR] error(10):  warning treated as error
+[WARNING] warning(125): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:13:46: implicit definition of token ALL in parser
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [13:46]: implicit definition of token ALL in parser
+[WARNING] warning(125): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:13:52: implicit definition of token LET in parser
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [13:52]: implicit definition of token LET in parser
+[WARNING] warning(125): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:13:58: implicit definition of token ALL_VERSIONS in parser
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [13:58]: implicit definition of token ALL_VERSIONS in parser
+[WARNING] warning(125): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:13:73: implicit definition of token ALL_VERSIONS_IN_RANGE in parser
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [13:73]: implicit definition of token ALL_VERSIONS_IN_RANGE in parser
+[WARNING] warning(125): com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4:14:46: implicit definition of token TO_BYTES_FUNCTION in parser
+[WARNING] /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/com/gs/alloy/lakehouse/runtime/grammar/antlr4/LakehouseMappingParserGrammar.g4 [14:46]: implicit definition of token TO_BYTES_FUNCTION in parser
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.000 s (Wall Clock)
+[INFO] Finished at: 2025-08-11T00:37:27-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.antlr:antlr4-maven-plugin:4.8-1:antlr4 (default) on project alloy-lakehouse-dataProduct-transformation-grammar: ANTLR 4 caught 1 build errors. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
 
-    <artifactId>alloy-lakehouse-dataProduct-transformation-grammar</artifactId>
-    <packaging>jar</packaging>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-antlr-core-grammar</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.finos.legend.engine</groupId>
-                                    <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-                                    <version>${legend.engine.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}</outputDirectory>
-                                    <includes>antlr/*.g4</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.8-1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                        <configuration>
-                            <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
-                            <libDirectory>target/antlr</libDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <!-- The dependency plugin analyzer raises these as false positives -->
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-store-relational-java</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-java:jar</dependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <properties>
-        <!-- java version override so that Alloy can import these modules-->
-        <maven.compiler.release>11</maven.compiler.release>
-        <antlr.version>4.8-1</antlr.version>
-        <guava.version>30.0-jre</guava.version>
-        <commons-lang.version>2.6</commons-lang.version>
-    </properties>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-java</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-dataProduct-transformation-protocol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <scope>compile</scope>
-            <version>${antlr.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-            <version>${legend.engine.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-            <version>${legend.engine.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-snowflake-grammar</artifactId>
-            <version>${legend.engine.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-ingest-model-grammar</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.gs.alloy.lakehouse</groupId>
-            <artifactId>alloy-lakehouse-dataProduct-model-grammar</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-</project>
+Process finished with exit code 1
