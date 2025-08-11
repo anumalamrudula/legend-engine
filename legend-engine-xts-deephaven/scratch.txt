@@ -578,3 +578,11 @@ mappingScopeInfo:                           unquotedIdentifier
         <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->
     </dependencies>
 </project>
+
+
+[INFO] --- antlr4:4.8-1:antlr4 (default) @ alloy-lakehouse-dataProduct-transformation-grammar ---
+[INFO] ANTLR 4: Processing source directory /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4
+[ERROR] Dependency analysis failed, see exception report for details
+java.lang.IllegalArgumentException: expected /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/target/antlr/RelationalParserGrammar.g4 to be prefixed with /local/data/scratch/projects/alloy-lakehouse/alloy-lakehouse-api/alloy-lakehouse-dataProduct/alloy-lakehouse-dataProduct-transformation/alloy-lakehouse-dataProduct-transformation-grammar/src/main/antlr4
+    at org.antlr.mojo.antlr4.MojoUtils.findSourceSubdir (MojoUtils.java:67)
+    at org.antlr.mojo.antlr4.GrammarDependencies.analyse (GrammarDependencies.java:242)
