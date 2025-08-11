@@ -31,38 +31,9 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
-<!--                                    <outputDirectory>${project.basedir}/src/main</outputDirectory>-->
                                     <includes>antlr/*.g4</includes>
                                 </artifactItem>
                             </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-<!--                            <outputDirectory>target/antlr</outputDirectory>-->
-                            <outputDirectory>{$project.build.directory}/antlr</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>
-                                        ${project.build.directory}/antlr
-                                    </directory>
-                                    <includes>
-                                        <include>RelationalParserGrammar.g4</include>
-                                        <include>RelationalLexerGrammar.g4</include>
-                                    </includes>
-                                </resource>
-                            </resources>
                         </configuration>
                     </execution>
                 </executions>
@@ -78,25 +49,10 @@
                         </goals>
                         <configuration>
                             <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
-                            <includes>
-                                <include>**/Lakehouse*.g4</include>
-                            </includes>
-<!--                            <libDirectory>target/antlr</libDirectory>-->
-                            <libDirectory>{$project.build.directory}/antlr</libDirectory>
-                            <outputDirectory>{$project.build.directory}/generated-resources</outputDirectory>
-                            <sourceDirectory>${project.basedir}/src/main/antlr4</sourceDirectory>
-                            <visitor>true</visitor>
-                            <listener>true</listener>
+                            <libDirectory>target/antlr</libDirectory>
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-                        <version>${legend.engine.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
