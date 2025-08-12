@@ -1,7 +1,33 @@
-Caused by: com.fasterxml.jackson.databind.exc.InvalidTypeIdException: Could not resolve type id 'dynaFunc' as a subtype of `com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseRelationalOperationElement`: Class `org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc` not subtype of `com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseRelationalOperationElement`
- at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData["elements"]->java.util.ArrayList[2]->org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping["classMappings"]->java.util.ArrayList[0]->com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping["propertyMappings"]->java.util.ArrayList[0]->com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping["relationalOperation"])
-	at com.fasterxml.jackson.databind.exc.InvalidTypeIdException.from(InvalidTypeIdException.java:43)
-	at com.fasterxml.jackson.databind.DeserializationContext.invalidTypeIdException(DeserializationContext.java:2040)
-	at com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase._findDeserializer(TypeDeserializerBase.java:199)
-	at com.fasterxml.jackson.databind.jsontype.impl.AsPropertyTypeDeserializer._deserializeTypedForId(AsPropertyTypeDeserializer.java:151)
-	at com.fasterxml.jackson.databind.jsontype.impl.AsPropertyTypeDeserializer.deserializeTypedFromObject(AsPropertyTypeDeserializer.java:136)
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "_type"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = TableAliasColumn.class, name = "column"),
+        @JsonSubTypes.Type(value = ElementWithJoins.class, name = "elemtWithJoins"),
+        @JsonSubTypes.Type(value = DynaFunc.class, name = "dynaFunc"),
+        @JsonSubTypes.Type(value = Literal.class, name = "literal"),
+        @JsonSubTypes.Type(value = LiteralList.class, name = "literalList"),
+        @JsonSubTypes.Type(value = IngestRelationColumn.class, name = "ingestRelationColumn")
+})
+public interface RelationalOperationElementMixIn {
+}
+
+
+
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+
+@JsonTypeName("ingestRelationColumn")
+public class IngestRelationColumn extends RelationalOperationElement {
+    public IngestRelationAccessor ingestAccessor;
+    public String column;
+}
