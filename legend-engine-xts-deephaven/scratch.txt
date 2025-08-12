@@ -1,89 +1,20 @@
-package com.gs.alloy.lakehouse.runtime.model.grammar;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.RelationalOperationElementMixIn;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext.Builder;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
-public class TestLakehouseRuntimeRoundTrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class LakehouseRuntimeProtocolExtension implements PureProtocolExtension
 {
-    private static ObjectMapper testObjectMapper;
-
-    @BeforeAll
-    public static void setUp()
+    @Override
+    public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
-        // Create a new ObjectMapper based on the standard one
-        testObjectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().copy();
-        // Register the mix-in
-        testObjectMapper.addMixIn(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement.class, RelationalOperationElementMixIn.class);
-    }
-
-    @Test
-    public void testLakehouseMappingIde()
-    {
-        String grammar = "###Lakehouse\n" +
-                "Ingest test::ingest::PersonIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "  Person\n" +
-                "  (\n" +
-                "    last_name:Varchar(200)[1],\n" +
-                "    firm_id:Varchar(200)[1]\n" +
-                "  ) DP10;\n" +
-                "]\n" +
-                "\n" +
-                "###Pure\n" +
-                "import test::model::*;\n" +
-                "import meta::pure::precisePrimitives::*;\n" +
-                "\n" +
-                "Class test::model::Person\n" +
-                "{\n" +
-                "  lastName : String[1];\n" +
-                "}\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping::MyMap\n" +
-                "(\n" +
-                "  test::model::Person : Lakehouse\n" +
-                "  {\n" +
-                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
-                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name)\n" +
-                "  }\n" +
-                ")";
-
-        // Use the custom ObjectMapper for the roundtrip test
-        testWithCustomObjectMapper(grammar, null, false, org.finos.legend.engine.shared.core.api.grammar.RenderStyle.STANDARD);
-    }
-
-    private void testWithCustomObjectMapper(String code, String message, boolean keepSectionIndex, org.finos.legend.engine.shared.core.api.grammar.RenderStyle renderStyle)
-    {
-        try
-        {
-            PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code, "", 0, 0, false);
-            String json = testObjectMapper.writeValueAsString(modelData);
-            PureModelContextData deserializedModelData = testObjectMapper.readValue(json, PureModelContextData.class);
-            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(Builder.newInstance().withRenderStyle(renderStyle).build());
-            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(deserializedModelData));
-            if (!keepSectionIndex)
-            {
-                PureModelContextData modelDataWithoutSectionIndex = PureModelContextData.newBuilder()
-                        .withOrigin(modelData.origin)
-                        .withSerializer(modelData.serializer)
-                        .withElements(ListIterate.reject(modelData.getElements(), el -> el instanceof SectionIndex))
-                        .build();
-                Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelDataWithoutSectionIndex));
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
+                ProtocolSubTypeInfo.newBuilder(EngineRuntime.class)
+                        .withSubtype(LakehouseRuntime.class, "LakehouseRuntime")
+                        .build(),
+                // Class mapping
+                ProtocolSubTypeInfo.newBuilder(ClassMapping.class)
+                        .withSubtype(LakehouseClassMapping.class, "MongoDB")
+                        .build(),
+                // Property mapping
+                ProtocolSubTypeInfo.newBuilder(PropertyMapping.class)
+                        .withSubtype(LakehousePropertyMapping.class, "LakehousePropertyMapping")
+                        .build()
+        ));
     }
 }
