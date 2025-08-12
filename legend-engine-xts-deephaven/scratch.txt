@@ -1,14 +1,35 @@
 package com.gs.alloy.lakehouse.runtime.model.grammar;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.RelationalOperationElementMixIn;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext.Builder;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 public class TestLakehouseRuntimeRoundTrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    private static ObjectMapper testObjectMapper;
+
+    @BeforeAll
+    public static void setUp()
+    {
+        // Create a new ObjectMapper based on the standard one
+        testObjectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().copy();
+        // Register the mix-in
+        testObjectMapper.addMixIn(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement.class, RelationalOperationElementMixIn.class);
+    }
+
     @Test
     public void testLakehouseMappingIde()
     {
-        test("###Lakehouse\n" +
+        String grammar = "###Lakehouse\n" +
                 "Ingest test::ingest::PersonIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
                 "[\n" +
                 "  Person\n" +
@@ -35,143 +56,34 @@ public class TestLakehouseRuntimeRoundTrip extends TestGrammarRoundtrip.TestGram
                 "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
                 "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name)\n" +
                 "  }\n" +
-                ")");
-    }
-}
+                ")";
 
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
-package org.finos.legend.engine.language.pure.grammar.test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-import java.util.Scanner;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext.Builder;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
-import org.junit.Assert;
-
-public class TestGrammarRoundtrip {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
-    public TestGrammarRoundtrip() {
+        // Use the custom ObjectMapper for the roundtrip test
+        testWithCustomObjectMapper(grammar, null, false, org.finos.legend.engine.shared.core.api.grammar.RenderStyle.STANDARD);
     }
 
-    public static class TestGrammarRoundtripTestSuite {
-        public TestGrammarRoundtripTestSuite() {
-        }
-
-        protected void testParsedProtocol(String val, String expectedProtocol) throws JsonProcessingException {
-            Assert.assertEquals(expectedProtocol, TestGrammarRoundtrip.objectMapper.writeValueAsString(PureGrammarParser.newInstance().parseModel(val, false)));
-        }
-
-        public void testFrom(String code, String expectedProtocolPath) {
-            String expectedProtocol = (new Scanner((InputStream)Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream(expectedProtocolPath), "Can't find resource '" + expectedProtocolPath + "'"), "UTF-8")).useDelimiter("\\A").next();
-
-            try {
-                PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code);
-                String parsedProtocol = TestGrammarRoundtrip.objectMapper.writeValueAsString(modelData);
-                Assert.assertEquals(TestGrammarRoundtrip.objectMapper.readTree(expectedProtocol), TestGrammarRoundtrip.objectMapper.readTree(parsedProtocol));
-            } catch (IOException var6) {
-                IOException e = var6;
-                throw new RuntimeException(e);
-            }
-        }
-
-        public void testTo(String protocolResource, String expectedCode) {
-            try {
-                PureModelContextData modelData = (PureModelContextData)TestGrammarRoundtrip.objectMapper.readValue((InputStream)Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream(protocolResource)), PureModelContextData.class);
-                String modelCode = PureGrammarComposer.newInstance(Builder.newInstance().build()).renderPureModelContextData(modelData);
-                Assert.assertEquals(expectedCode, modelCode);
-            } catch (IOException var5) {
-                IOException e = var5;
-                throw new RuntimeException(e);
-            }
-        }
-
-        protected void testComposedGrammar(String protocol, String expected) throws JsonProcessingException {
-            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(Builder.newInstance().build());
-            Assert.assertEquals(expected, grammarTransformer.renderPureModelContextData((PureModelContextData)TestGrammarRoundtrip.objectMapper.readValue(protocol, PureModelContextData.class)));
-        }
-
-        public static void test(String code) {
-            test(code, (String)null, false);
-        }
-
-        public static void test(String code, RenderStyle renderStyle) {
-            test(code, (String)null, false, renderStyle);
-        }
-
-        public static void testWithSectionInfoPreserved(String code) {
-            test(code, (String)null, true);
-        }
-
-        public static void testSectionWithPureGrammar(String code, boolean isPureGrammar) {
-            test(code, (String)null, false, RenderStyle.STANDARD, isPureGrammar);
-        }
-
-        private static void test(String code, String message, boolean keepSectionIndex, RenderStyle renderStyle) {
-            test(code, message, keepSectionIndex, renderStyle, false);
-        }
-
-        private static void test(String code, String message, boolean keepSectionIndex, RenderStyle renderStyle, boolean isPureGrammar) {
-            PureModelContextData modelData = null;
-
-            try {
-                modelData = PureGrammarParser.newInstance().parseModel(code, "", 0, 0, false);
-                String json = TestGrammarRoundtrip.objectMapper.writeValueAsString(modelData);
-                modelData = (PureModelContextData)TestGrammarRoundtrip.objectMapper.readValue(json, PureModelContextData.class);
-            } catch (IOException var8) {
-                IOException e = var8;
-                throw new RuntimeException(e);
-            }
-
-            PureGrammarComposer grammarTransformer = isPureGrammar ? PureGrammarComposer.newInstance(Builder.newInstance().withPureGrammar().withRenderStyle(renderStyle).build()) : PureGrammarComposer.newInstance(Builder.newInstance().withRenderStyle(renderStyle).build());
-            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
-            if (!keepSectionIndex) {
-                PureModelContextData modelDataWithoutSectionIndex = PureModelContextData.newBuilder().withOrigin(modelData.origin).withSerializer(modelData.serializer).withElements(ListIterate.reject(modelData.getElements(), (el) -> {
-                    return el instanceof SectionIndex;
-                })).build();
+    private void testWithCustomObjectMapper(String code, String message, boolean keepSectionIndex, org.finos.legend.engine.shared.core.api.grammar.RenderStyle renderStyle)
+    {
+        try
+        {
+            PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(code, "", 0, 0, false);
+            String json = testObjectMapper.writeValueAsString(modelData);
+            PureModelContextData deserializedModelData = testObjectMapper.readValue(json, PureModelContextData.class);
+            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(Builder.newInstance().withRenderStyle(renderStyle).build());
+            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(deserializedModelData));
+            if (!keepSectionIndex)
+            {
+                PureModelContextData modelDataWithoutSectionIndex = PureModelContextData.newBuilder()
+                        .withOrigin(modelData.origin)
+                        .withSerializer(modelData.serializer)
+                        .withElements(ListIterate.reject(modelData.getElements(), el -> el instanceof SectionIndex))
+                        .build();
                 Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelDataWithoutSectionIndex));
             }
         }
-
-        private static void test(String code, String message, boolean keepSectionIndex) {
-            test(code, message, keepSectionIndex, RenderStyle.STANDARD);
-        }
-
-        public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode) {
-            testFormat(code, unformattedCode, false);
-        }
-
-        public static void testFormat(String code, String unformattedCode) {
-            testFormat(code, unformattedCode, true);
-        }
-
-        private static void testFormat(String code, String unformattedCode, boolean omitSectionIndex) {
-            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(Builder.newInstance().build());
-            PureModelContextData parsedModel = PureGrammarParser.newInstance().parseModel(unformattedCode, "", 0, 0, false);
-            if (omitSectionIndex) {
-                parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), (e) -> {
-                    return e instanceof SectionIndex;
-                }));
-            }
-
-            String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
-            Assert.assertEquals(code, formatted);
-            test(formatted, "Expected formatted code to pass round-trip test", !omitSectionIndex);
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 }
