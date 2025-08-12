@@ -1,420 +1,445 @@
-    public void testJoin()
-    {
-        test(
-                "###Relational\n" +
-                        "Database a::A (" +
-                        "   Table tb(id Integer, other VARCHAR(200))" +
-                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
-                        ")\n" +
-                        "\n" +
-                        "###Pure\n" +
-                        "function test::f():Any[*]\n" +
-                        "{\n" +
-                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.id == $b.id2})\n" +
-                        "}"
-        );
-    }
+parser grammar LakehouseMappingParserGrammar;
 
-
-parser grammar RelationalParserGrammar;
-
-import CoreParserGrammar;
+import RelationalParserGrammar;
 
 options
 {
-    tokenVocab = RelationalLexerGrammar;
+    tokenVocab = LakehouseMappingLexerGrammar;
 }
-
 
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 unquotedIdentifier:                         VALID_STRING
-                                            | DATABASE | INCLUDE
-                                            | SCHEMA | TABLE | VIEW | JOIN | FILTER | MULTIGRAIN_FILTER
-                                            | AND | OR
-                                            | MILESTONING | BUSINESS_MILESTONING | BUSINESS_MILESTONING_FROM | BUSINESS_MILESTONING_THRU
-                                            | OUT_IS_INCLUSIVE | THRU_IS_INCLUSIVE | INFINITY_DATE | BUS_SNAPSHOT_DATE
-                                            | PROCESSING_MILESTONING | PROCESSING_MILESTONING_IN | PROCESSING_MILESTONING_OUT | PROCESSING_SNAPSHOT_DATE
-                                            | SCOPE | ENUMERATION_MAPPING | ASSOCIATION_MAPPING | OTHERWISE | INLINE | BINDING | TABULAR_FUNC
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | TO_BYTES_FUNCTION
+                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
 ;
 
 identifier:                                 unquotedIdentifier | STRING
 ;
 
-// -------------------------------------- DEFINITION --------------------------------------
+// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
 
-definition:                                 (database)*
+lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+                                                (propertyMapping (COMMA propertyMapping)*)?
                                             EOF
 ;
-database:                                   DATABASE stereotypes? taggedValues? qualifiedName
-                                                PAREN_OPEN
-                                                    include*
-                                                    (
-                                                        schema
-                                                        | table
-                                                        | view
-                                                        | join
-                                                        | tabularFunction
-                                                        | filter
-                                                        | multiGrainFilter
-                                                    )*
-                                                PAREN_CLOSE
+ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
 ;
-include:                                    INCLUDE qualifiedName
+accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
 ;
-
-// -------------------------------------- STEREOTYPE --------------------------------------
-
-stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;
-
-stereotype:                         qualifiedName DOT identifier;
-
-taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+propertyMapping:                            qualifiedName STAR? COLON operation
 ;
-taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
+mappingScopeInfo:                           unquotedIdentifier
 ;
-
-// -------------------------------------- SCHEMA & TABLE --------------------------------------
-
-schema:                                     SCHEMA stereotypes? taggedValues? schemaIdentifier
-                                                PAREN_OPEN
-                                                    (
-                                                        table
-                                                        | view
-                                                        | tabularFunction
-                                                    )*
-                                                PAREN_CLOSE
-;
-table:                                      TABLE stereotypes? taggedValues? relationalIdentifier
-                                                PAREN_OPEN
-                                                    milestoneSpec?
-                                                    (columnDefinition (COMMA columnDefinition)*)?
-                                                PAREN_CLOSE
-;
-columnDefinition:                           relationalIdentifier stereotypes? taggedValues? identifier (PAREN_OPEN INTEGER (COMMA INTEGER)? PAREN_CLOSE)? (PRIMARY_KEY | NOT_NULL)?
-;
-
-// -------------------------------------- MILESTONING --------------------------------------
-
-milestoneSpec:                              MILESTONING
-                                                PAREN_OPEN
-                                                    (milestoning (COMMA milestoning)*)?
-                                                PAREN_CLOSE
-;
-milestoning:                                milestoningType
-                                                PAREN_OPEN
-                                                    milestoningSpecification
-                                                PAREN_CLOSE
-;
-milestoningType:                            identifier
-;
-milestoningSpecification:                   (relationalIdentifier | COMMA | BOOLEAN | DATE | EQUAL)*
-;
-businessMilestoning:                        BUSINESS_MILESTONING
-                                                PAREN_OPEN
-                                                    (
-                                                        businessMilestoningFromThru
-                                                        | businessSnapshotDate
-                                                    )
-                                                PAREN_CLOSE
-;
-businessMilestoningFromThru:                BUSINESS_MILESTONING_FROM EQUAL identifier COMMA
-                                            BUSINESS_MILESTONING_THRU EQUAL identifier
-                                            (COMMA THRU_IS_INCLUSIVE EQUAL BOOLEAN)?
-                                            (COMMA INFINITY_DATE EQUAL DATE)?
-;
-businessSnapshotDate:                       BUS_SNAPSHOT_DATE EQUAL identifier
-;
-processingMilestoning:                      PROCESSING_MILESTONING
-                                                PAREN_OPEN
-                                                    (
-                                                        processingMilestoningInOut
-                                                        | processingSnapshotDate
-                                                    )
-                                                PAREN_CLOSE
-;
-processingMilestoningInOut:                 PROCESSING_MILESTONING_IN EQUAL identifier COMMA
-                                            PROCESSING_MILESTONING_OUT EQUAL identifier
-                                            (COMMA OUT_IS_INCLUSIVE EQUAL BOOLEAN)?
-                                            (COMMA INFINITY_DATE EQUAL DATE)?
-;
-processingSnapshotDate:                     PROCESSING_SNAPSHOT_DATE EQUAL identifier
-;
-// -------------------------------------- VIEW --------------------------------------
-
-view:                                       VIEW stereotypes? taggedValues?  relationalIdentifier
-                                                PAREN_OPEN
-                                                    (viewFilterMapping)?
-                                                    (viewGroupBy)?
-                                                    (DISTINCT_CMD)?
-                                                    (viewColumnMapping (COMMA viewColumnMapping)*)?
-                                                PAREN_CLOSE
-;
-viewFilterMapping:                          FILTER_CMD (viewFilterMappingJoin | databasePointer)? identifier
-;
-viewFilterMappingJoin:                      databasePointer joinSequence PIPE databasePointer
-;
-viewGroupBy:                                GROUP_BY_CMD
-                                                PAREN_OPEN
-                                                    (operation (COMMA operation)*)?
-                                                PAREN_CLOSE
-;
-viewColumnMapping:                          identifier (BRACKET_OPEN identifier BRACKET_CLOSE)? COLON operation PRIMARY_KEY?
-;
-
-// -------------------------------------- TABULAR FUNCTION --------------------------------------
-tabularFunction:                               TABULAR_FUNC relationalIdentifier
-                                                PAREN_OPEN
-                                                    (columnDefinition (COMMA columnDefinition)*)?
-                                                PAREN_CLOSE
-;
-
-
-// -------------------------------------- FILTER & JOIN --------------------------------------
-
-filter:                                     FILTER identifier PAREN_OPEN operation PAREN_CLOSE
-;
-multiGrainFilter:                           MULTIGRAIN_FILTER identifier PAREN_OPEN operation PAREN_CLOSE
-;
-join:                                       JOIN identifier PAREN_OPEN operation PAREN_CLOSE
-;
-
-// -------------------------------------- OPERATIONS --------------------------------------
-
-// NOTE: we have the `...Right` parser rule to avoid mutually left-recursive rules. For example, the rule
-// `booleanOperation: operation booleanOperator operation` will cause ANTLR to throw error
-// See https://github.com/antlr/antlr4/blob/master/doc/left-recursion.md
-//
-// Also note that we split the rule `operation` because in `joinOperation` we cannot directly use `joinOperation` as the operation
-//
-// IMPORTANT: Notice the way we construct `booleanOperation`, and `atomicOperation` which
-// forms a hierarchy/precedence. The gist of this is:
-//  - The more deeply nested the parser rule, the higher the precedence it is
-//  - The higher precedence rule should use only token of precedence equals or higher than itself
-//    (i.e. `atomicOperation` should not use `booleanOperation` in its parser definition)
-// See https://stackoverflow.com/questions/1451728/antlr-operator-precedence
-
-operation:                                  booleanOperation
-                                            | joinOperation
-;
-booleanOperation:                           atomicOperation booleanOperationRight?
-;
-booleanOperationRight:                      booleanOperator operation
-;
-booleanOperator:                            AND | OR
-;
-atomicOperation:                            (
-                                                groupOperation
-                                                | ( databasePointer? functionOperation )
-                                                | columnOperation
-                                                | joinOperation
-                                                | constant
-                                            )
-                                            atomicOperationRight?
-;
-atomicOperationRight:                       (atomicOperator atomicOperation) | atomicSelfOperator
-;
-atomicOperator:                             EQUAL | TEST_NOT_EQUAL | NOT_EQUAL | GREATER_THAN | LESS_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL
-;
-atomicSelfOperator:                         IS_NULL | IS_NOT_NULL
-;
-groupOperation:                             PAREN_OPEN operation PAREN_CLOSE
-;
-constant:                                   STRING | INTEGER | FLOAT
-;
-functionOperation:                          identifier PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
-;
-functionOperationArgument:                  operation | functionOperationArgumentArray
-;
-functionOperationArgumentArray:             BRACKET_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? BRACKET_CLOSE
-;
-columnOperation:                            databasePointer? tableAliasColumnOperation
-;
-tableAliasColumnOperation:                  tableAliasColumnOperationWithTarget | tableAliasColumnOperationWithScopeInfo
-;
-tableAliasColumnOperationWithTarget:        TARGET DOT relationalIdentifier
-;
-tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
-;
-joinOperation:                              databasePointer? joinSequence (PIPE (booleanOperation | tableAliasColumnOperation))?
-;
-joinSequence:                               (PAREN_OPEN identifier PAREN_CLOSE)? joinPointer (GREATER_THAN joinPointerFull)*
-;
-joinPointer:                                AT identifier
-;
-joinPointerFull:                            (PAREN_OPEN identifier PAREN_CLOSE)? databasePointer? joinPointer
-;
-
-
-// -------------------------------------- RELATIONAL MAPPING --------------------------------------
-
-// NOTE: Order must be preserved here as we want the associationMapping rule to be mapped as an associationMapping
-// not as an embedded property mapping
-mapping:                                    associationMapping | classMapping
-;
-associationMapping:                         ASSOCIATION_MAPPING
-                                                PAREN_OPEN
-                                                    propertyMapping (COMMA propertyMapping)*
-                                                PAREN_CLOSE
-                                                EOF
-;
-classMapping:                               mappingFilter?
-                                            DISTINCT_CMD?
-                                            mappingGroupBy?
-                                            mappingPrimaryKey?
-                                            mappingMainTable?
-                                            (propertyMapping (COMMA propertyMapping)*)?
-                                            EOF
-;
-mappingFilter:                              FILTER_CMD databasePointer (joinSequence PIPE databasePointer)? identifier
-;
-mappingGroupBy:                             GROUP_BY_CMD
-                                                PAREN_OPEN
-                                                    (operation (COMMA operation)*)?
-                                                PAREN_CLOSE
-;
-mappingPrimaryKey:                          PRIMARY_KEY_CMD
-                                                PAREN_OPEN
-                                                    (operation (COMMA operation)*)?
-                                                PAREN_CLOSE
-;
-mappingMainTable:                           MAIN_TABLE_CMD databasePointer mappingScopeInfo
-;
-mappingScopeInfo:                           relationalIdentifier (DOT scopeInfo)?
-;
-
-
-// -------------------------------------- PROPERTY MAPPING --------------------------------------
-
-propertyMapping:                            singlePropertyMapping | propertyMappingWithScope
-;
-propertyMappingWithScope:                   SCOPE PAREN_OPEN databasePointer mappingScopeInfo? PAREN_CLOSE
-                                                PAREN_OPEN
-                                                    singlePropertyMapping (COMMA singlePropertyMapping)*
-                                                PAREN_CLOSE
-;
-singlePropertyMapping:                      singlePropertyMappingWithPlus | singlePropertyMappingWithoutPlus
-;
-singlePropertyMappingWithPlus:              PLUS identifier localMappingProperty relationalPropertyMapping
-;
-singlePropertyMappingWithoutPlus:           identifier sourceAndTargetMappingId?
-                                            (
-                                                relationalPropertyMapping
-                                                | embeddedPropertyMapping
-                                                | inlineEmbeddedPropertyMapping
-                                            )
-;
-sourceAndTargetMappingId:                   BRACKET_OPEN sourceId (COMMA targetId)? BRACKET_CLOSE
-;
-sourceId:                                   identifier
-;
-targetId:                                   identifier
-;
-relationalPropertyMapping:                  COLON (transformer)? operation
-;
-transformer:                                enumTransformer | bindingTransformer
-;
-enumTransformer:                            ENUMERATION_MAPPING identifier COLON
-;
-bindingTransformer:                         BINDING qualifiedName COLON
-;
-
-
-// -------------------------------------- LOCAL MAPPING PROPERTY --------------------------------------
-
-localMappingProperty:                       COLON qualifiedName BRACKET_OPEN (localMappingPropertyFromMultiplicity DOT_DOT)? localMappingPropertyToMultiplicity BRACKET_CLOSE
-;
-localMappingPropertyFromMultiplicity:       INTEGER | STAR
-;
-localMappingPropertyToMultiplicity:         INTEGER | STAR
-;
-
-
-// -------------------------------------- EMBEDDED PROPERTY MAPPING --------------------------------------
-
-embeddedPropertyMapping:                    PAREN_OPEN
-                                            (
-                                                mappingPrimaryKey?
-                                                singlePropertyMapping (COMMA singlePropertyMapping)*
-                                            )?
-                                            PAREN_CLOSE (otherwiseEmbeddedPropertyMapping)?
-;
-inlineEmbeddedPropertyMapping:              PAREN_OPEN PAREN_CLOSE INLINE BRACKET_OPEN identifier BRACKET_CLOSE
-;
-otherwiseEmbeddedPropertyMapping:           OTHERWISE PAREN_OPEN otherwisePropertyMapping PAREN_CLOSE
-;
-otherwisePropertyMapping:                   BRACKET_OPEN identifier BRACKET_CLOSE COLON databasePointer? joinSequence
-;
-
-
 // -------------------------------------- BUILDING BLOCK --------------------------------------
 
-scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
-;
-databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
-;
-relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
-;
-// Should be the same as relationalIdentifier, but it currently breaks some projects
-schemaIdentifier:                           identifier | QUOTED_STRING
-;
+ scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+ ;
+ databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+ ;
+ relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+ ;
 
 
 
+public class LakehouseRuntimeParserExtension implements PureGrammarParserExtension
+{
+    public static final String NAME = "LakehouseRuntime";
+    public static final String LAKEHOUSE_MAPPING_ELEMENT_TYPE = "Lakehouse";
 
-    public void testLakehouseMappingJoin()
+    @Override
+    public MutableList<String> group()
     {
-        test("###Lakehouse\n" +
-                "Ingest test::ingest::FirmIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Firm(\n" +
-                "      id: Varchar(200)[1],\n" +
-                "      legalName: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10;\n" +
-                "]\n" +
-                        "\n" +
-                "\n" +
-                "Ingest test::ingest::PersonIngest BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Person(\n" +
-                "      last_name: Varchar(200)[1],\n" +
-                "      firm_id: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10\n" +
-                "   pk=[firm_id];\n" +
-                "]\n" +
-                "\n" +
-                "###Pure\n" +
-                "function test::myFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
-                "{\n" +
-                "  test::model::Person.all()->project(~[firmID:x|$x.firm_id, Name:x|$x.lastName])->from(test::mapping::MyMap1, my::DuckDBRuntime)\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Pure\n" +
-                "Class test::model::Firm\n" +
-                "{\n" +
-                "  id: String[1];\n" +
-                "  legalName: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::model::Person\n" +
-                "{\n" +
-                "  lastName: String[1];\n" +
-                "  firm_id: Firm[1];\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping::MyMap1\n" +
-                "(\n" +
-                "  test::model::Person: Lakehouse\n" +
-                "  {\n" +
-                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
-                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name),\n" +
-                "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id\n" +
-                "  }\n" +
-                ")\n"
-        );
+        return Lists.mutable.with("PackageableElement", "LakehouseRuntime");
     }
+
+    @Override
+    public Iterable<? extends SectionParser> getExtraSectionParsers()
+    {
+        return Lists.fixedSize.of(SectionParser.newParser(NAME, this::parseSection));
+    }
+
+    private Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
+    {
+        SourceCodeParserInfo parserInfo = getRuntimeSectionParserInfo(sectionSourceCode);
+        DefaultCodeSection section = new DefaultCodeSection();
+        section.parserName = sectionSourceCode.sectionType;
+        section.sourceInformation = parserInfo.sourceInformation;
+        LakehouseRuntimeParseTreeWalker walker = new LakehouseRuntimeParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        walker.visit((LakehouseRuntimeParserGrammar.DefinitionContext) parserInfo.rootContext);
+        return section;
+    }
+
+    private SourceCodeParserInfo getRuntimeSectionParserInfo(SectionSourceCode sectionSourceCode)
+    {
+        CharStream input = CharStreams.fromString(sectionSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation, LakehouseRuntimeLexerGrammar.VOCABULARY);
+        LakehouseRuntimeLexerGrammar lexer = new LakehouseRuntimeLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        LakehouseRuntimeParserGrammar parser = new LakehouseRuntimeParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    public static SourceCodeParserInfo getMappingSectionParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingParseTreeWalkerSourceInformation);
+        LakehouseMappingLexerGrammar lexer = new LakehouseMappingLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        LakehouseMappingParserGrammar parser = new LakehouseMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        LakehouseMappingParserGrammar.LakehouseClassMappingContext classMappingCtx = parser.lakehouseClassMapping();
+        return new SourceCodeParserInfo(mappingElementSourceCode.code,
+                input,
+                mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext),
+                mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation,
+                lexer,
+                parser,
+                classMappingCtx);
+    }
+
+    @Override
+    public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
+    {
+        return Collections.singletonList(MappingElementParser.newParser(LAKEHOUSE_MAPPING_ELEMENT_TYPE,
+                        (mappingElementSourceCode, parserContext) ->
+                        {
+                            MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+                            SourceCodeParserInfo parserInfo = getMappingSectionParserInfo(mappingElementSourceCode);
+                            LakehouseClassMappingParseTreeWalker walker = new LakehouseClassMappingParseTreeWalker(parserInfo.walkerSourceInformation,
+                                    parserInfo.input, parserContext);
+
+                            LakehouseClassMapping lakehouseClassMapping = new LakehouseClassMapping();
+                            lakehouseClassMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                            lakehouseClassMapping.root = ctx.STAR() != null;
+                            lakehouseClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null; //anumam
+                            walker.visitLakehouseClassMapping((LakehouseMappingParserGrammar.LakehouseClassMappingContext) parserInfo.rootContext, ctx, lakehouseClassMapping);
+                            return lakehouseClassMapping;
+                        })
+                );
+    }
+}
+
+
+
+
+
+package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
+
+import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
+import com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar;
+import org.antlr.v4.runtime.CharStream;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class LakehouseClassMappingParseTreeWalker
+{
+    private final CharStream input;
+    private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserContext parserContext;
+
+    public LakehouseClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
+    {
+        this.input = input;
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.parserContext = parserContext;
+    }
+
+    private String visitDatabasePointer(LakehouseMappingParserGrammar.DatabasePointerContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) : null;
+    }
+
+    private String visitMappingScopeInfo(LakehouseMappingParserGrammar.MappingScopeInfoContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : null;
+    }
+
+    public void visitLakehouseClassMapping(LakehouseMappingParserGrammar.LakehouseClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        if (ctx.ingestSrc() != null)
+        {
+            IngestRelationAccessor tmp = new IngestRelationAccessor();
+            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.ingestSrc().databasePointer()), ctx.ingestSrc().qualifiedName().getText());
+            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestSrc());
+            lakehouseClassMapping.ingestPtr = tmp;
+        }
+        // property mappings (optional)
+        lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
+    }
+
+//    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+//    {
+//        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
+//        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        PropertyPointer propertyPointer = new PropertyPointer();
+//        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(0));
+//        propertyPointer._class = lakehouseClassMapping._class;
+//        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        propertyMapping.property = propertyPointer;
+//        propertyMapping.source = lakehouseClassMapping.id;
+//        propertyMapping.relationalColumn = new IngestRelationColumn();
+//        propertyMapping.relationalColumn.ingestAccessor = lakehouseClassMapping.ingestPtr;
+//        propertyMapping.relationalColumn.Column = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(2));
+//        propertyMapping.property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        return propertyMapping;
+//    }
+
+    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
+        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        PropertyPointer propertyPointer = new PropertyPointer();
+        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName());
+        propertyPointer._class = lakehouseClassMapping._class;
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        propertyMapping.property = propertyPointer;
+        propertyMapping.source = lakehouseClassMapping.id;
+
+        // Parse the operation
+        propertyMapping.relationalOperation = visitOperation(ctx.operation(), lakehouseClassMapping.ingestPtr);
+
+        return propertyMapping;
+    }
+
+    private RelationalOperationElement visitOperation(LakehouseMappingParserGrammar.OperationContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        if (ctx.booleanOperation() != null)
+        {
+            return visitBooleanOperation(ctx.booleanOperation(), ingestPtr);
+        }
+        else if (ctx.joinOperation() != null)
+        {
+            throw new EngineException("Join operations are not yet supported in Lakehouse mappings", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitBooleanOperation(LakehouseMappingParserGrammar.BooleanOperationContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        RelationalOperationElement operationElement = visitAtomicOperation(ctx.atomicOperation(), ingestPtr);
+        if (ctx.booleanOperationRight() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = ctx.booleanOperationRight().booleanOperator().AND() != null ? "and" : "or";
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(operationElement);
+            RelationalOperationElement right = visitOperation(ctx.booleanOperationRight().operation(), ingestPtr);
+            operation.parameters.add(right);
+            return operation;
+        }
+        return operationElement;
+    }
+
+    private RelationalOperationElement visitAtomicOperation(LakehouseMappingParserGrammar.AtomicOperationContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        RelationalOperationElement operationElement = null;
+        if (ctx.groupOperation() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = "group";
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(visitOperation(ctx.groupOperation().operation(), ingestPtr));
+            operationElement = operation;
+        }
+        else if (ctx.functionOperation() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.functionOperation().identifier());
+            operation.parameters = ListIterate.collect(ctx.functionOperation().functionOperationArgument(), argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr));
+            operationElement = operation;
+        }
+        else if (ctx.columnOperation() != null)
+        {
+            operationElement = visitColumnOperation(ctx.columnOperation(), ingestPtr);
+        }
+        else if (ctx.constant() != null)
+        {
+            Literal constant = new Literal();
+            constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            if (ctx.constant().STRING() != null)
+            {
+                constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
+            }
+            else if (ctx.constant().INTEGER() != null)
+            {
+                constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
+            }
+            else if (ctx.constant().FLOAT() != null)
+            {
+                constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
+            }
+            else
+            {
+                throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            operationElement = constant;
+        }
+        else if (ctx.joinOperation() != null)
+        {
+            throw new EngineException("Join operations are not supported in Lakehouse mappings", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        if (operationElement == null)
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        operationElement.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.atomicOperationRight() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(operationElement);
+            if (ctx.atomicOperationRight().atomicOperator() != null)
+            {
+                operation.funcName = visitAtomicOperator(ctx.atomicOperationRight().atomicOperator());
+                operation.parameters.add(visitAtomicOperation(ctx.atomicOperationRight().atomicOperation(), ingestPtr));
+            }
+            else if (ctx.atomicOperationRight().atomicSelfOperator() != null)
+            {
+                operation.funcName = visitAtomicSelfOperator(ctx.atomicOperationRight().atomicSelfOperator());
+            }
+            else
+            {
+                throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            operationElement = operation;
+        }
+        return operationElement;
+    }
+
+    private String visitAtomicOperator(LakehouseMappingParserGrammar.AtomicOperatorContext ctx)
+    {
+        if (ctx.EQUAL() != null)
+        {
+            return "equal";
+        }
+        if (ctx.GREATER_THAN() != null)
+        {
+            return "greaterThan";
+        }
+        if (ctx.LESS_THAN() != null)
+        {
+            return "lessThan";
+        }
+        if (ctx.GREATER_OR_EQUAL() != null)
+        {
+            return "greaterThanEqual";
+        }
+        if (ctx.LESS_OR_EQUAL() != null)
+        {
+            return "lessThanEqual";
+        }
+        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null)
+        {
+            return "notEqual";
+        }
+        throw new EngineException("Unsupported operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private String visitAtomicSelfOperator(LakehouseMappingParserGrammar.AtomicSelfOperatorContext ctx)
+    {
+        if (ctx.IS_NULL() != null)
+        {
+            return "isNull";
+        }
+        if (ctx.IS_NOT_NULL() != null)
+        {
+            return "isNotNull";
+        }
+        throw new EngineException("Unsupported self operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitFunctionOperationArgument(LakehouseMappingParserGrammar.FunctionOperationArgumentContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        if (ctx.operation() != null)
+        {
+            return visitOperation(ctx.operation(), ingestPtr);
+        }
+        throw new EngineException("Unsupported function argument syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitColumnOperation(LakehouseMappingParserGrammar.ColumnOperationContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        if (ctx.tableAliasColumnOperation() != null)
+        {
+            if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget() != null)
+            {
+                return visitTableAliasColumnOperationWithTarget(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget(), ingestPtr);
+            }
+            else if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo() != null)
+            {
+                return visitTableAliasColumnOperationWithScopeInfo(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo(), ingestPtr);
+            }
+        }
+        throw new EngineException("Unsupported column operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitTableAliasColumnOperationWithTarget(LakehouseMappingParserGrammar.TableAliasColumnOperationWithTargetContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        IngestRelationColumn column = new IngestRelationColumn();
+        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        column.ingestAccessor = new IngestRelationAccessor();
+        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
+        String tableName = ctx.TARGET() != null ? ctx.TARGET().getText() : null;
+        if (tableName == null)
+        {
+            throw new EngineException("Table name (TARGET) is required in column operation", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
+        column.column = ctx.relationalIdentifier().QUOTED_STRING() != null
+                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
+                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
+        return column;
+    }
+
+    private RelationalOperationElement visitTableAliasColumnOperationWithScopeInfo(LakehouseMappingParserGrammar.TableAliasColumnOperationWithScopeInfoContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        IngestRelationColumn column = new IngestRelationColumn();
+        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        column.ingestAccessor = new IngestRelationAccessor();
+        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
+        String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
+                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
+                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
+        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
+        if (ctx.scopeInfo() != null && ctx.scopeInfo().relationalIdentifier().size() > 0)
+        {
+            column.column = ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING() != null
+                    ? PureGrammarParserUtility.fromGrammarString(ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING().getText(), true)
+                    : PureGrammarParserUtility.fromIdentifier(ctx.scopeInfo().relationalIdentifier(0).unquotedIdentifier());
+        }
+        else
+        {
+            throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        return column;
+    }
+}
