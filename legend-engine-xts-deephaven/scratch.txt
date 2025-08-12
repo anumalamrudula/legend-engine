@@ -50,7 +50,9 @@ import org.finos.legend.pure.generated.Root_meta_external_ingest_metamodel_pure_
 import org.finos.legend.pure.generated.Root_meta_external_ingest_metamodel_pure_LakehouseSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_ingest_specification_metamodel_IngestDefinition;
 import org.finos.legend.pure.generated.Root_meta_external_ingest_specification_metamodel_dataset_Dataset;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DynaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Literal_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -63,12 +65,15 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class LakehouseMappingCompilerExtension implements CompilerExtension
 {
@@ -152,7 +157,7 @@ public class LakehouseMappingCompilerExtension implements CompilerExtension
         Property property = resolvePropertyForLakehousePropertyMapping(propertyMapping, immediateParent, context);
         lpm._property(property)
                 ._localMappingProperty(propertyMapping.localMappingProperty != null)
-                ._relationalOperation(processRelationalOperationElement(propertyMapping.relationalOperation, ra, context))
+                ._operation(processLakehouseOperationElement(propertyMapping.relationalOperation, ra, context))
                 ._sourceSetImplementationId(getPropertyMappingSourceId(propertyMapping, immediateParent, property, context))
                 ._targetSetImplementationId(getPropertyMappingTargetId(propertyMapping, immediateParent, property, context))
                 ._owner(immediateParent);
@@ -160,32 +165,32 @@ public class LakehouseMappingCompilerExtension implements CompilerExtension
         return lpm;
     }
 
-    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property processRelationalOperationElement(RelationalOperationElement operation, Root_meta_external_ingest_accessor_IngestRelationAccessor ra, CompileContext context)
+    private RelationalOperationElement processLakehouseOperationElement(RelationalOperationElement operation, Root_meta_external_ingest_accessor_IngestRelationAccessor ra, CompileContext context)
     {
+        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(operation.sourceInformation);
         if (operation instanceof IngestRelationColumn)
         {
             IngestRelationColumn column = (IngestRelationColumn) operation;
-            return new Root_meta_external_ingest_mapping_IngestRelationColumn_Impl("", SourceInformationHelper.toM3SourceInformation(column.sourceInformation), context.pureModel.getClass("meta::external::ingest::mapping::IngestRelationColumn"))
+            return new Root_meta_external_ingest_mapping_IngestRelationColumn_Impl("", m3SourceInformation, context.pureModel.getClass("meta::external::ingest::mapping::IngestRelationColumn"))
                     ._ingestAccessor(ra)
                     ._Column(column.Column);
         }
         else if (operation instanceof DynaFunc)
         {
             DynaFunc func = (DynaFunc) operation;
-            Root_meta_pure_metamodel_function_property_Property_Impl property = new Root_meta_pure_metamodel_function_property_Property_Impl("", SourceInformationHelper.toM3SourceInformation(func.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::Property"));
-            property._name(func.funcName);
-            property._parameters(ListIterate.collect(func.parameters, param -> processRelationalOperationElement(param, ra, context)));
-            return property;
+            Root_meta_relational_metamodel_DynaFunction_Impl dynaFunc = new Root_meta_relational_metamodel_DynaFunction_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::DynaFunction"));
+            dynaFunc._name(func.funcName);
+            dynaFunc._parameters(ListIterate.collect(func.parameters, param -> processLakehouseOperationElement(param, ra, context)));
+            return dynaFunc;
         }
         else if (operation instanceof Literal)
         {
             Literal literal = (Literal) operation;
-            Root_meta_pure_metamodel_function_property_Property_Impl property = new Root_meta_pure_metamodel_function_property_Property_Impl("", SourceInformationHelper.toM3SourceInformation(literal.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::Property"));
-            property._name("literal");
-            property._parameters(FastList.newListWith(context.pureModel.getValueSpecification(literal.value, literal.sourceInformation)));
-            return property;
+            Root_meta_relational_metamodel_Literal_Impl lit = new Root_meta_relational_metamodel_Literal_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::Literal"));
+            lit._value(literal.value);
+            return lit;
         }
-        throw new EngineException("Unsupported relational operation type: " + operation.getClass().getSimpleName(), operation.sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException("Unsupported lakehouse operation type: " + operation.getClass().getSimpleName(), operation.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     public static String getPropertyMappingSourceId(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping, PropertyMappingsImplementation parent, Property<?, ?> property, CompileContext context)
@@ -265,10 +270,10 @@ public class LakehouseMappingCompilerExtension implements CompilerExtension
 
     private void collectPrerequisiteElementsFromLakehousePropertyMapping(Set<PackageableElementPointer> prerequisiteElements, LakehousePropertyMapping propertyMapping)
     {
-        collectPrerequisiteElementsFromRelationalOperation(propertyMapping.relationalOperation, prerequisiteElements, propertyMapping.sourceInformation);
+        collectPrerequisiteElementsFromRelationalOperation(prerequisiteElements, propertyMapping.relationalOperation);
     }
 
-    private void collectPrerequisiteElementsFromRelationalOperation(RelationalOperationElement operation, Set<PackageableElementPointer> prerequisiteElements, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    private void collectPrerequisiteElementsFromRelationalOperation(Set<PackageableElementPointer> prerequisiteElements, RelationalOperationElement operation)
     {
         if (operation instanceof IngestRelationColumn)
         {
@@ -281,7 +286,7 @@ public class LakehouseMappingCompilerExtension implements CompilerExtension
         else if (operation instanceof DynaFunc)
         {
             DynaFunc func = (DynaFunc) operation;
-            ListIterate.forEach(func.parameters, param -> collectPrerequisiteElementsFromRelationalOperation(param, prerequisiteElements, func.sourceInformation));
+            ListIterate.forEach(func.parameters, param -> collectPrerequisiteElementsFromRelationalOperation(prerequisiteElements, param));
         }
         // Literals don't introduce prerequisites
     }
