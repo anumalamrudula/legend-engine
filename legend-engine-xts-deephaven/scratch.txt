@@ -1,93 +1,34 @@
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation;
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.*;
 
 @JsonTypeInfo(
-    use = Id.NAME,
-    property = "_type"
+        use = Id.NAME,
+        property = "_type"
 )
-@JsonSubTypes({@Type(
-    value = TableAliasColumn.class,
-    name = "column"
-), @Type(
-    value = ElementWithJoins.class,
-    name = "elemtWithJoins"
-), @Type(
-    value = DynaFunc.class,
-    name = "dynaFunc"
-), @Type(
-    value = Literal.class,
-    name = "literal"
-), @Type(
-    value = LiteralList.class,
-    name = "literalList"
-)})
-public abstract class RelationalOperationElement {
-    public SourceInformation sourceInformation;
-
-    public RelationalOperationElement() {
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = TableAliasColumn.class, name = "column"),
+        @JsonSubTypes.Type(value = ElementWithJoins.class, name = "elemtWithJoins"),
+        @JsonSubTypes.Type(value = DynaFunc.class, name = "dynaFunc"),
+        @JsonSubTypes.Type(value = Literal.class, name = "literal"),
+        @JsonSubTypes.Type(value = LiteralList.class, name = "literalList"),
+        @JsonSubTypes.Type(value = IngestRelationColumn.class, name = "ingestRelationColumn")
+})
+public abstract class LakehouseRelationalOperationElement extends RelationalOperationElement {
+    public LakehouseRelationalOperationElement() {
     }
 }
 
-public class IngestRelationColumn extends RelationalOperationElement
-{
+
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
+@JsonTypeName("ingestRelationColumn")
+public class IngestRelationColumn extends LakehouseRelationalOperationElement {
     public IngestRelationAccessor ingestAccessor;
     public String column;
 }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithTarget(LakehouseMappingParserGrammar.TableAliasColumnOperationWithTargetContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
-        String tableName = ctx.TARGET() != null ? ctx.TARGET().getText() : null;
-        if (tableName == null)
-        {
-            throw new EngineException("Table name (TARGET) is required in column operation", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
-        column.column = ctx.relationalIdentifier().QUOTED_STRING() != null
-                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
-                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
-        return column;
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithScopeInfo(LakehouseMappingParserGrammar.TableAliasColumnOperationWithScopeInfoContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
-        String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
-                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
-                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
-        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
-        if (ctx.scopeInfo() != null && ctx.scopeInfo().relationalIdentifier().size() > 0)
-        {
-            column.column = ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING() != null
-                    ? PureGrammarParserUtility.fromGrammarString(ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING().getText(), true)
-                    : PureGrammarParserUtility.fromIdentifier(ctx.scopeInfo().relationalIdentifier(0).unquotedIdentifier());
-        }
-        else
-        {
-            throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        return column;
-    }
-
-
-
-Caused by: com.fasterxml.jackson.databind.exc.InvalidTypeIdException: Could not resolve type id 'IngestRelationColumn' as a subtype of `org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement`: known type ids = [column, dynaFunc, elemtWithJoins, literal, literalList] (for POJO property 'parameters')
- at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData["elements"]->java.util.ArrayList[2]->org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping["classMappings"]->java.util.ArrayList[0]->com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping["propertyMappings"]->java.util.ArrayList[0]->com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping["relationalOperation"]->org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc["parameters"]->java.util.ArrayList[0])
-	at com.fasterxml.jackson.databind.exc.InvalidTypeIdException.from(InvalidTypeIdException.java:43)
-	at com.fasterxml.jackson.databind.DeserializationContext.invalidTypeIdException(DeserializationContext.java:2040)
-	at com.fasterxml.jackson.databind.DeserializationContext.handleUnknownTypeId(DeserializationContext.java:1590)
-	at com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase._handleUnknownTypeId(TypeDeserializerBase.java:298)
-	at com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase._findDeserializer(TypeDeserializerBase.java:165)
