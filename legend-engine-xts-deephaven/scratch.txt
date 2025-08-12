@@ -1,20 +1,33 @@
-public class LakehouseRuntimeProtocolExtension implements PureProtocolExtension
+this.converterMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+public class ObjectMapperFactory
 {
-    @Override
-    public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
+    public static <T extends ObjectMapper> T withStandardConfigurations(T objectMapper)
     {
-        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
-                ProtocolSubTypeInfo.newBuilder(EngineRuntime.class)
-                        .withSubtype(LakehouseRuntime.class, "LakehouseRuntime")
-                        .build(),
-                // Class mapping
-                ProtocolSubTypeInfo.newBuilder(ClassMapping.class)
-                        .withSubtype(LakehouseClassMapping.class, "MongoDB")
-                        .build(),
-                // Property mapping
-                ProtocolSubTypeInfo.newBuilder(PropertyMapping.class)
-                        .withSubtype(LakehousePropertyMapping.class, "LakehousePropertyMapping")
-                        .build()
-        ));
+        objectMapper
+                .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+                .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+        objectMapper.setTimeZone(TimeZone.getDefault());
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return objectMapper;
+    }
+
+    public static ObjectMapper getNewStandardObjectMapper()
+    {
+        return withStandardConfigurations(new ObjectMapper());
+    }
+
+    public static ObjectMapper getNewStandardObjectMapperWithPureProtocolExtensionSupports()
+    {
+        return withStandardConfigurations(
+                // Tactically we will run converters as part of the standard flow
+                PureProtocolObjectMapperFactory.withPureProtocolConverter(
+                        PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper())
+                )
+        );
     }
 }
+
+
