@@ -1,8 +1,34 @@
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@JsonTypeName("dynaFunc")
+public class LakehouseDynaFunc extends LakehouseRelationalOperationElement {
+    public String funcName;
+    public List<LakehouseRelationalOperationElement> parameters = new ArrayList<>();
+}
+
+package com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
+@JsonTypeName("literal")
+public class LakehouseLiteral extends LakehouseRelationalOperationElement {
+    public Object value;
+}
+
 package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
 
 import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
 import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
 import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseDynaFunc;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseLiteral;
 import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
 import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseRelationalOperationElement;
 import com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar;
@@ -16,8 +42,6 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParse
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -87,7 +111,7 @@ public class LakehouseClassMappingParseTreeWalker
         LakehouseRelationalOperationElement operationElement = visitAtomicOperation(ctx.atomicOperation(), ingestPtr);
         if (ctx.booleanOperationRight() != null)
         {
-            DynaFunc operation = new DynaFunc();
+            LakehouseDynaFunc operation = new LakehouseDynaFunc();
             operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             operation.funcName = ctx.booleanOperationRight().booleanOperator().AND() != null ? "and" : "or";
             operation.parameters = new ArrayList<>();
@@ -104,7 +128,7 @@ public class LakehouseClassMappingParseTreeWalker
         LakehouseRelationalOperationElement operationElement;
         if (ctx.groupOperation() != null)
         {
-            DynaFunc operation = new DynaFunc();
+            LakehouseDynaFunc operation = new LakehouseDynaFunc();
             operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             operation.funcName = "group";
             operation.parameters = new ArrayList<>();
@@ -113,7 +137,7 @@ public class LakehouseClassMappingParseTreeWalker
         }
         else if (ctx.functionOperation() != null)
         {
-            DynaFunc operation = new DynaFunc();
+            LakehouseDynaFunc operation = new LakehouseDynaFunc();
             operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.functionOperation().identifier());
             operation.parameters = ListIterate.collect(ctx.functionOperation().functionOperationArgument(), argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr));
@@ -125,7 +149,7 @@ public class LakehouseClassMappingParseTreeWalker
         }
         else if (ctx.constant() != null)
         {
-            Literal constant = new Literal();
+            LakehouseLiteral constant = new LakehouseLiteral();
             constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             if (ctx.constant().STRING() != null)
             {
@@ -156,7 +180,7 @@ public class LakehouseClassMappingParseTreeWalker
 
         if (ctx.atomicOperationRight() != null)
         {
-            DynaFunc operation = new DynaFunc();
+            LakehouseDynaFunc operation = new LakehouseDynaFunc();
             operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
             operation.parameters = new ArrayList<>();
             operation.parameters.add(operationElement);
