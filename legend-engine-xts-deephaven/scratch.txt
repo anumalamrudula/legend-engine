@@ -243,6 +243,24 @@ public class LakehouseClassMappingParseTreeWalker
         return operationElement;
     }
 
+    private String visitAtomicOperator(LakehouseMappingParserGrammar.AtomicOperatorContext ctx)
+    {
+        if (ctx.EQUAL() != null) return "equal";
+        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null) return "notEqual";
+        if (ctx.GREATER_THAN() != null) return "greaterThan";
+        if (ctx.LESS_THAN() != null) return "lessThan";
+        if (ctx.GREATER_OR_EQUAL() != null) return "greaterThanEqual";
+        if (ctx.LESS_OR_EQUAL() != null) return "lessThanEqual";
+        throw new EngineException("Unsupported operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private String visitAtomicSelfOperator(LakehouseMappingParserGrammar.AtomicSelfOperatorContext ctx)
+    {
+        if (ctx.IS_NULL() != null) return "isNull";
+        if (ctx.IS_NOT_NULL() != null) return "isNotNull";
+        throw new EngineException("Unsupported self operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
     private RelationalOperationElement visitFunctionExpression(LakehouseMappingParserGrammar.FunctionExpressionContext ctx, IngestRelationAccessor ingestPtr)
     {
         DynaFunc operation = new DynaFunc();
