@@ -1,347 +1,543 @@
-package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
+i don't see any explicit grammar defined to parse this, may be this addressed in one of these ?
+so like may not exactly as a join but just takes up as any other function - so here its join function with bunch of parameters to it
 
-import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
-import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
-import com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar;
-import org.antlr.v4.runtime.CharStream;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.ElementWithJoins;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+parser grammar M3ParserGrammar;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import CoreParserGrammar;
 
-public class LakehouseClassMappingParseTreeWalker
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+identifier:                                     VALID_STRING | STRING
+                                                | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                                | TO_BYTES_FUNCTION
+;
+
+// -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
+
+nonArrowOrEqualExpression :
+                                                (
+                                                    atomicExpression
+                                                    | notExpression
+                                                    | signedExpression
+                                                    | expressionsArray
+                                                    | (PAREN_OPEN combinedExpression PAREN_CLOSE)
+                                                )
+;
+
+expression:                                     (
+                                                    nonArrowOrEqualExpression
+                                                    (
+                                                        (propertyOrFunctionExpression)*
+                                                        (equalNotEqual)?
+                                                    )
+                                                )
+;
+
+
+instance:                                       NEW_SYMBOL qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)? identifier?
+                                                (FILE_NAME COLON INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER COMMA INTEGER FILE_NAME_END)? (AT qualifiedName)?
+                                                    PAREN_OPEN
+                                                        (instancePropertyAssignment (COMMA instancePropertyAssignment)*)?
+                                                    PAREN_CLOSE
+;
+unitInstance:                                   unitInstanceLiteral unitName
+;
+unitName:                                       qualifiedName TILDE identifier
+;
+instancePropertyAssignment:                     identifier EQUAL instanceRightSide
+;
+instanceRightSide:                              instanceAtomicRightSideScalar | instanceAtomicRightSideVector
+;
+instanceAtomicRightSideScalar:                  instanceAtomicRightSide
+;
+instanceAtomicRightSideVector:                  BRACKET_OPEN (instanceAtomicRightSide (COMMA instanceAtomicRightSide)* )? BRACKET_CLOSE
+;
+instanceAtomicRightSide:                        instanceLiteral
+                                                | LATEST_DATE
+                                                | instance
+                                                | qualifiedName
+                                                | enumReference
+                                                | stereotypeReference
+                                                | tagReference
+                                                | identifier
+;
+enumReference:                                  qualifiedName  DOT identifier
+;
+stereotypeReference:                            qualifiedName AT identifier
+;
+tagReference:                                   qualifiedName PERCENT identifier
+;
+propertyReturnType:                             type multiplicity
+;
+codeBlock:                                      programLine (SEMI_COLON (programLine SEMI_COLON)*)?
+;
+programLine:                                    combinedExpression | letExpression
+;
+equalNotEqual:                                  (TEST_EQUAL | TEST_NOT_EQUAL) combinedArithmeticOnly
+;
+combinedArithmeticOnly:                         expression arithmeticPart*
+;
+expressionPart:                                 booleanPart | arithmeticPart
+;
+letExpression:                                  LET identifier EQUAL combinedExpression
+;
+combinedExpression:                             expression expressionPart*
+;
+expressionsArray:                               BRACKET_OPEN ( expression (COMMA expression)* )? BRACKET_CLOSE
+;
+propertyOrFunctionExpression:                   propertyExpression | functionExpression | propertyBracketExpression
+;
+propertyExpression:                             DOT identifier (functionExpressionLatestMilestoningDateParameter | functionExpressionParameters)?
+;
+propertyBracketExpression:                      BRACKET_OPEN (STRING | INTEGER)  BRACKET_CLOSE
+;
+functionExpression:                             ARROW qualifiedName functionExpressionParameters (ARROW qualifiedName functionExpressionParameters)*
+;
+functionExpressionLatestMilestoningDateParameter:
+                                                PAREN_OPEN LATEST_DATE (COMMA LATEST_DATE)? PAREN_CLOSE
+;
+functionExpressionParameters:                   PAREN_OPEN (combinedExpression (COMMA combinedExpression)*)? PAREN_CLOSE
+;
+atomicExpression:                               dsl
+                                                | instanceLiteralToken
+                                                | expressionInstance
+                                                | unitInstance
+                                                | variable
+                                                | columnBuilders
+                                                | (AT type)
+                                                | anyLambda
+                                                | instanceReference
+;
+
+columnBuilders: TILDE (oneColSpec | colSpecArray)
+;
+oneColSpec: identifier ((COLON (type | anyLambda) extraFunction? ))?
+;
+colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
+;
+extraFunction: (COLON anyLambda)
+;
+
+anyLambda : lambdaPipe | lambdaFunction | lambdaParam lambdaPipe
+;
+
+instanceReference:                              (PATH_SEPARATOR | qualifiedName | unitName) allOrFunction?
+;
+lambdaFunction:                                 BRACE_OPEN (lambdaParam (COMMA lambdaParam)* )? lambdaPipe BRACE_CLOSE
+;
+variable:                                       DOLLAR identifier
+;
+allOrFunction:                                  allFunction
+                                                | allVersionsFunction
+                                                | allVersionsInRangeFunction
+                                                | allFunctionWithMilestoning
+                                                | functionExpressionParameters
+;
+allFunction:                                    DOT ALL PAREN_OPEN PAREN_CLOSE
+;
+allVersionsFunction:                            DOT ALL_VERSIONS PAREN_OPEN PAREN_CLOSE
+;
+allVersionsInRangeFunction:                     DOT ALL_VERSIONS_IN_RANGE PAREN_OPEN buildMilestoningVariableExpression COMMA buildMilestoningVariableExpression PAREN_CLOSE
+;
+allFunctionWithMilestoning:                     DOT ALL PAREN_OPEN buildMilestoningVariableExpression (COMMA buildMilestoningVariableExpression)? PAREN_CLOSE
+;
+buildMilestoningVariableExpression:             LATEST_DATE | DATE | variable
+;
+expressionInstance:                             NEW_SYMBOL (variable | qualifiedName)
+                                                (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)? (identifier)?
+                                                (typeVariableValues)?
+                                                PAREN_OPEN
+                                                    expressionInstanceParserPropertyAssignment? (COMMA expressionInstanceParserPropertyAssignment)*
+                                                PAREN_CLOSE
+;
+expressionInstanceRightSide:                    expressionInstanceAtomicRightSide
+;
+expressionInstanceAtomicRightSide:              combinedExpression | expressionInstance | qualifiedName
+;
+expressionInstanceParserPropertyAssignment:     identifier (DOT identifier)* PLUS? EQUAL expressionInstanceRightSide
+;
+notExpression:                                  NOT expression
+;
+signedExpression:                               (MINUS | PLUS) expression
+;
+lambdaPipe:                                     PIPE codeBlock
+;
+lambdaParam:                                    identifier lambdaParamType?
+;
+lambdaParamType:                                COLON type multiplicity
+;
+primitiveValue:                                 primitiveValueAtomic | primitiveValueVector
+;
+primitiveValueVector:                           BRACKET_OPEN (primitiveValueAtomic (COMMA primitiveValueAtomic)* )? BRACKET_CLOSE
+;
+primitiveValueAtomic:                           instanceLiteral | toBytesLiteral | enumReference
+;
+instanceLiteral:                                instanceLiteralToken | (MINUS INTEGER) | (MINUS FLOAT) | (MINUS DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
+;
+instanceLiteralToken:                           STRING | INTEGER | FLOAT | DECIMAL | DATE | BOOLEAN | STRICTTIME
+;
+toBytesLiteral:                                 TO_BYTES_FUNCTION PAREN_OPEN STRING PAREN_CLOSE
+;
+unitInstanceLiteral:                            (MINUS? INTEGER) | (MINUS? FLOAT) | (MINUS? DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
+;
+arithmeticPart:                                 (
+                                                    PLUS expression (PLUS expression)*
+                                                    | (STAR expression (STAR expression)*)
+                                                    | (MINUS expression (MINUS expression)*)
+                                                    | (DIVIDE expression (DIVIDE expression)*)
+                                                    | (LESS_THAN expression)
+                                                    | (LESS_OR_EQUAL expression)
+                                                    | (GREATER_THAN expression)
+                                                    | (GREATER_OR_EQUAL expression)
+                                                )
+;
+booleanPart:                                    (AND expression) | (OR  expression)
+;
+functionVariableExpression:                     identifier COLON type multiplicity
+;
+dsl:                                            dslExtension | dslNavigationPath
+;
+dslNavigationPath:                              NAVIGATION_PATH_BLOCK
+;
+dslExtension:                                   ISLAND_OPEN (dslExtensionContent)*
+;
+dslExtensionContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+type:                                           (qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)?) typeVariableValues?
+                                                |
+                                                (
+                                                    BRACE_OPEN
+                                                        functionTypePureType? (COMMA functionTypePureType)*
+                                                        ARROW type multiplicity
+                                                    BRACE_CLOSE
+                                                )
+                                                |
+                                                    relationType
+                                                |
+                                                unitName
+;
+
+
+relationType :  PAREN_OPEN
+                   columnInfo (COMMA columnInfo)*
+                PAREN_CLOSE
+;
+
+columnInfo: columnName COLON type multiplicity?
+;
+
+columnName: identifier
+;
+
+typeVariableValues: PAREN_OPEN (instanceLiteral (COMMA instanceLiteral)*)? PAREN_CLOSE
+;
+
+functionTypePureType:                           type multiplicity
+;
+typeAndMultiplicityParameters:                  LESS_THAN ((typeParameters multiplictyParameters?) | multiplictyParameters) GREATER_THAN
+;
+typeParametersWithContravarianceAndMultiplicityParameters:
+                                                LESS_THAN ((contravarianceTypeParameters multiplictyParameters?) | multiplictyParameters) GREATER_THAN
+;
+typeParameters:                                 typeParameter (COMMA typeParameter)*
+;
+typeParameter:                                  identifier
+;
+contravarianceTypeParameters:                   contravarianceTypeParameter (COMMA contravarianceTypeParameter)*
+;
+contravarianceTypeParameter:                    MINUS? identifier
+;
+multiplicityArguments:                          multiplicityArgument (COMMA multiplicityArgument)*
+;
+typeArguments:                                  type (COMMA type)*
+;
+multiplictyParameters:                          PIPE identifier (COMMA identifier)*
+;
+
+
+
+
+multiplicity:                                   BRACKET_OPEN multiplicityArgument BRACKET_CLOSE
+;
+multiplicityArgument:                           identifier | ((fromMultiplicity DOT_DOT)? toMultiplicity)
+;
+fromMultiplicity:                               INTEGER
+;
+toMultiplicity:                                 INTEGER | STAR
+;
+
+
+
+functionIdentifier:                             qualifiedName PAREN_OPEN (functionTypePureType (COMMA functionTypePureType)*)? PAREN_CLOSE COLON functionTypePureType
+;
+
+
+
+parser grammar DomainParserGrammar;
+
+import M3ParserGrammar;
+
+options
 {
-    private final CharStream input;
-    private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final PureGrammarParserContext parserContext;
-
-    public LakehouseClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
-    {
-        this.input = input;
-        this.walkerSourceInformation = walkerSourceInformation;
-        this.parserContext = parserContext;
-    }
-
-    private String visitDatabasePointer(LakehouseMappingParserGrammar.DatabasePointerContext ctx)
-    {
-        return ctx != null ? PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) : null;
-    }
-
-    private String visitMappingScopeInfo(LakehouseMappingParserGrammar.MappingScopeInfoContext ctx)
-    {
-        return ctx != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : null;
-    }
-
-    public void visitLakehouseClassMapping(LakehouseMappingParserGrammar.LakehouseClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
-    {
-        if (ctx.ingestSrc() != null)
-        {
-            IngestRelationAccessor tmp = new IngestRelationAccessor();
-            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.ingestSrc().databasePointer()), ctx.ingestSrc().qualifiedName().getText());
-            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestSrc());
-            lakehouseClassMapping.ingestPtr = tmp;
-        }
-        else if (ctx.accessPointSrc() != null)
-        {
-            IngestRelationAccessor tmp = new IngestRelationAccessor();
-            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.accessPointSrc().databasePointer()), ctx.accessPointSrc().qualifiedName().getText());
-            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.accessPointSrc());
-            lakehouseClassMapping.ingestPtr = tmp;
-        }
-        lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
-    }
-
-    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
-    {
-        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
-        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        PropertyPointer propertyPointer = new PropertyPointer();
-        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName());
-        propertyPointer._class = lakehouseClassMapping._class;
-        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
-        propertyMapping.property = propertyPointer;
-        propertyMapping.source = lakehouseClassMapping.id;
-        propertyMapping.relationalOperation = visitOperation(ctx.operation(), lakehouseClassMapping.ingestPtr);
-        return propertyMapping;
-    }
-
-    private RelationalOperationElement visitOperation(LakehouseMappingParserGrammar.OperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.booleanOperation() != null)
-        {
-            return visitBooleanOperation(ctx.booleanOperation(), ingestPtr);
-        }
-        else if (ctx.joinOperation() != null)
-        {
-            return visitJoinOperation(ctx.joinOperation(), ingestPtr);
-        }
-        throw new EngineException("Unsupported operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitBooleanOperation(LakehouseMappingParserGrammar.BooleanOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        RelationalOperationElement operationElement = visitAtomicOperation(ctx.atomicOperation(), ingestPtr);
-        if (ctx.booleanOperationRight() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = ctx.booleanOperationRight().booleanOperator().AND() != null ? "and" : "or";
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(operationElement);
-            RelationalOperationElement right = visitOperation(ctx.booleanOperationRight().operation(), ingestPtr);
-            operation.parameters.add(right);
-            return operation;
-        }
-        return operationElement;
-    }
-
-    private RelationalOperationElement visitAtomicOperation(LakehouseMappingParserGrammar.AtomicOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        RelationalOperationElement operationElement;
-        if (ctx.groupOperation() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = "group";
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(visitOperation(ctx.groupOperation().operation(), ingestPtr));
-            operationElement = operation;
-        }
-        else if (ctx.functionOperation() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.functionOperation().identifier());
-            operation.parameters = ListIterate.collect(ctx.functionOperation().functionOperationArgument(), argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr));
-            operationElement = operation;
-        }
-        else if (ctx.columnOperation() != null)
-        {
-            operationElement = visitColumnOperation(ctx.columnOperation(), ingestPtr);
-        }
-        else if (ctx.constant() != null)
-        {
-            Literal constant = new Literal();
-            constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            if (ctx.constant().STRING() != null)
-            {
-                constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
-            }
-            else if (ctx.constant().INTEGER() != null)
-            {
-                constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
-            }
-            else if (ctx.constant().FLOAT() != null)
-            {
-                constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
-            }
-            else
-            {
-                throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-            }
-            operationElement = constant;
-        }
-        else if (ctx.joinOperation() != null)
-        {
-            operationElement = visitJoinOperation(ctx.joinOperation(), ingestPtr);
-        }
-        else
-        {
-            throw new EngineException("Unsupported atomic operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-
-        if (ctx.atomicOperationRight() != null)
-        {
-            DynaFunc operation = new DynaFunc();
-            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.parameters = new ArrayList<>();
-            operation.parameters.add(operationElement);
-            if (ctx.atomicOperationRight().atomicOperator() != null)
-            {
-                operation.funcName = visitAtomicOperator(ctx.atomicOperationRight().atomicOperator());
-                operation.parameters.add(visitAtomicOperation(ctx.atomicOperationRight().atomicOperation(), ingestPtr));
-            }
-            else if (ctx.atomicOperationRight().atomicSelfOperator() != null)
-            {
-                operation.funcName = visitAtomicSelfOperator(ctx.atomicOperationRight().atomicSelfOperator());
-            }
-            else
-            {
-                throw new EngineException("Unsupported atomic operation right syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-            }
-            operationElement = operation;
-        }
-        return operationElement;
-    }
-
-    private String visitAtomicOperator(LakehouseMappingParserGrammar.AtomicOperatorContext ctx)
-    {
-        if (ctx.EQUAL() != null) return "equal";
-        if (ctx.GREATER_THAN() != null) return "greaterThan";
-        if (ctx.LESS_THAN() != null) return "lessThan";
-        if (ctx.GREATER_OR_EQUAL() != null) return "greaterThanEqual";
-        if (ctx.LESS_OR_EQUAL() != null) return "lessThanEqual";
-        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null) return "notEqual";
-        throw new EngineException("Unsupported operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private String visitAtomicSelfOperator(LakehouseMappingParserGrammar.AtomicSelfOperatorContext ctx)
-    {
-        if (ctx.IS_NULL() != null) return "isNull";
-        if (ctx.IS_NOT_NULL() != null) return "isNotNull";
-        throw new EngineException("Unsupported self operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitFunctionOperationArgument(LakehouseMappingParserGrammar.FunctionOperationArgumentContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.operation() != null)
-        {
-            return visitOperation(ctx.operation(), ingestPtr);
-        }
-        else if (ctx.functionOperationArgumentArray() != null)
-        {
-            throw new EngineException("Array arguments are not supported in Lakehouse mappings", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        throw new EngineException("Unsupported function argument syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitColumnOperation(LakehouseMappingParserGrammar.ColumnOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        String database = ctx.databasePointer() != null ? visitDatabasePointer(ctx.databasePointer()) : (ingestPtr != null ? ingestPtr.path.get(0) : null);
-        if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget() != null)
-        {
-            return visitTableAliasColumnOperationWithTarget(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget(), ingestPtr);
-        }
-        else if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo() != null)
-        {
-            return visitTableAliasColumnOperationWithScopeInfo(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo(), ingestPtr);
-        }
-        throw new EngineException("Unsupported column operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithTarget(LakehouseMappingParserGrammar.TableAliasColumnOperationWithTargetContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
-        String tableName = ctx.TARGET() != null ? ctx.TARGET().getText() : null;
-        if (tableName == null)
-        {
-            throw new EngineException("Table name (TARGET) is required in column operation", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
-        column.column = ctx.relationalIdentifier().QUOTED_STRING() != null
-                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
-                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
-        return column;
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperationWithScopeInfo(LakehouseMappingParserGrammar.TableAliasColumnOperationWithScopeInfoContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        IngestRelationColumn column = new IngestRelationColumn();
-        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        column.ingestAccessor = new IngestRelationAccessor();
-        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
-        String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
-                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
-                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
-        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
-        if (ctx.scopeInfo() != null && ctx.scopeInfo().relationalIdentifier().size() > 0)
-        {
-            column.column = ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING() != null
-                    ? PureGrammarParserUtility.fromGrammarString(ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING().getText(), true)
-                    : PureGrammarParserUtility.fromIdentifier(ctx.scopeInfo().relationalIdentifier(0).unquotedIdentifier());
-        }
-        else
-        {
-            throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-        return column;
-    }
-
-    private RelationalOperationElement visitJoinOperation(LakehouseMappingParserGrammar.JoinOperationContext ctx, IngestRelationAccessor ingestPtr)
-    {
-        ElementWithJoins operation = new ElementWithJoins();
-        operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        operation.joins = new ArrayList<>();
-
-        // Parse source relation: [test::ingest::PersonIngest]Person
-        String sourceDb = ctx.databasePointer(0) != null ? visitDatabasePointer(ctx.databasePointer(0)) : (ingestPtr != null ? ingestPtr.path.get(0) : null);
-        String sourceTable = PureGrammarParserUtility.fromIdentifier(ctx.identifier(0));
-        IngestRelationAccessor sourceAccessor = new IngestRelationAccessor();
-        sourceAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.databasePointer(0));
-        sourceAccessor.path = Lists.mutable.with(sourceDb, sourceTable);
-
-        // Parse target relation: [test::ingest::FirmIngest]Firm
-        String targetDb = ctx.databasePointer(1) != null ? visitDatabasePointer(ctx.databasePointer(1)) : null;
-        String targetTable = PureGrammarParserUtility.fromIdentifier(ctx.identifier(1));
-        IngestRelationAccessor targetAccessor = new IngestRelationAccessor();
-        targetAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.databasePointer(1));
-        targetAccessor.path = Lists.mutable.with(targetDb, targetTable);
-
-        // Create JoinPointer
-        JoinPointer joinPointer = new JoinPointer();
-        joinPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        joinPointer.name = "join"; // Default name for the join
-        joinPointer.joinType = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
-        joinPointer.db = targetDb;
-        operation.joins.add(joinPointer);
-
-        // Parse join condition: {x,y|$x.firm_id == $y.firm_id}
-        if (ctx.functionOperation() != null)
-        {
-            DynaFunc joinCondition = new DynaFunc();
-            joinCondition.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.functionOperation());
-            joinCondition.funcName = "lambda";
-            joinCondition.parameters = new ArrayList<>();
-            // Pass source and target accessors for lambda parameters
-            for (int i = 0; i < ctx.functionOperation().functionOperationArgument().size(); i++)
-            {
-                LakehouseMappingParserGrammar.FunctionOperationArgumentContext argCtx = ctx.functionOperation().functionOperationArgument(i);
-                IngestRelationAccessor argAccessor = i == 0 ? sourceAccessor : targetAccessor;
-                joinCondition.parameters.add(visitFunctionOperationArgument(argCtx, argAccessor));
-            }
-            operation.relationalElement = joinCondition;
-        }
-
-        // Parse projection: [test::ingest::FirmIngest]Firm.id
-        if (ctx.tableAliasColumnOperation() != null)
-        {
-            operation.relationalElement = visitTableAliasColumnOperation(ctx.tableAliasColumnOperation(), targetDb, targetAccessor);
-        }
-
-        return operation;
-    }
-
-    private RelationalOperationElement visitTableAliasColumnOperation(LakehouseMappingParserGrammar.TableAliasColumnOperationContext ctx, String database, IngestRelationAccessor ingestPtr)
-    {
-        if (ctx.tableAliasColumnOperationWithTarget() != null)
-        {
-            return visitTableAliasColumnOperationWithTarget(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithTarget(), ingestPtr);
-        }
-        else if (ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo() != null)
-        {
-            return visitTableAliasColumnOperationWithScopeInfo(ctx.tableAliasColumnOperation().tableAliasColumnOperationWithScopeInfo(), ingestPtr);
-        }
-        throw new EngineException("Unsupported column operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-    }
+    tokenVocab = DomainLexerGrammar;
 }
+
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+identifier:                                     VALID_STRING | STRING
+                                                | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                                | TO_BYTES_FUNCTION      // from M3Parser
+                                                | IMPORT
+                                                | CLASS | FUNCTION | PROFILE | ASSOCIATION | ENUM | MEASURE
+                                                | EXTENDS
+                                                | STEREOTYPES | TAGS
+                                                | NATIVE | PROJECTS | AS
+                                                | CONSTRAINT_ENFORCEMENT_LEVEL_ERROR | CONSTRAINT_ENFORCEMENT_LEVEL_WARN
+                                                | AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
+;
+
+
+// -------------------------------------- DEFINITION --------------------------------------
+
+definition:                                     imports
+                                                    elementDefinition*
+                                                EOF
+;
+imports:                                        importStatement*
+;
+importStatement:                                IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
+;
+elementDefinition:                              (
+                                                    profile
+                                                    | classDefinition
+                                                    | association
+                                                    | enumDefinition
+                                                    | nativeFunction
+                                                    | functionDefinition
+                                                    | instance
+                                                    | measureDefinition
+                                                )
+;
+
+
+// -------------------------------------- SHARED --------------------------------------
+
+stereotypes:                                    LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
+;
+stereotype:                                     qualifiedName DOT identifier
+;
+taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
+;
+
+
+// -------------------------------------- CLASS --------------------------------------
+
+classDefinition:                                CLASS stereotypes? taggedValues? qualifiedName typeParametersWithContravarianceAndMultiplicityParameters?
+                                                (
+                                                    (PROJECTS projection)
+                                                    |
+                                                    (
+                                                        (EXTENDS type (COMMA type)*)?
+                                                        constraints?
+                                                        classBody
+                                                    )
+                                                )
+;
+classBody:                                      BRACE_OPEN
+                                                    properties
+                                                BRACE_CLOSE
+;
+properties:                                     (property | qualifiedProperty)*
+;
+property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType defaultValue? SEMI_COLON
+;
+qualifiedProperty:                              stereotypes? taggedValues? identifier qualifiedPropertyBody COLON propertyReturnType  SEMI_COLON
+;
+qualifiedPropertyBody:                          PAREN_OPEN (functionVariableExpression (COMMA functionVariableExpression)*)? PAREN_CLOSE
+                                                    BRACE_OPEN codeBlock BRACE_CLOSE
+;
+aggregation:                                    PAREN_OPEN aggregationType PAREN_CLOSE
+;
+aggregationType:                                AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
+;
+
+defaultValue: EQUAL defaultValueExpression
+;
+
+defaultValueExpression: (instanceReference)(propertyExpression) | expressionInstance | instanceLiteralToken | defaultValueExpressionsArray
+;
+
+defaultValueExpressionsArray: BRACKET_OPEN ( defaultValueExpression (COMMA defaultValueExpression)* )? BRACKET_CLOSE
+;
+
+
+// -------------------------------------- ASSOCIATION --------------------------------------
+
+association:                                    ASSOCIATION stereotypes? taggedValues? qualifiedName
+                                                    (associationProjection | associationBody)
+;
+associationBody:                                BRACE_OPEN properties BRACE_CLOSE
+;
+associationProjection:                          PROJECTS qualifiedName LESS_THAN qualifiedName COMMA qualifiedName GREATER_THAN
+;
+
+
+// -------------------------------------- PROFILE --------------------------------------
+
+profile:                                        PROFILE qualifiedName
+                                                    BRACE_OPEN
+                                                        (
+                                                            stereotypeDefinitions
+                                                            | tagDefinitions
+                                                        )*
+                                                    BRACE_CLOSE
+;
+stereotypeDefinitions:                          (STEREOTYPES COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON)
+;
+tagDefinitions:                                 (TAGS COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON)
+;
+
+
+// -------------------------------------- ENUM --------------------------------------
+
+enumDefinition:                                 ENUM stereotypes? taggedValues? qualifiedName
+                                                    BRACE_OPEN
+                                                        (enumValue (COMMA enumValue)*)?
+                                                    BRACE_CLOSE
+;
+enumValue:                                      stereotypes? taggedValues? identifier
+;
+
+
+// -------------------------------------- MEASURE --------------------------------------
+
+measureDefinition:                              MEASURE qualifiedName
+                                                    measureBody
+;
+measureBody:                                    BRACE_OPEN
+                                                    (
+                                                        (measureExpr* canonicalExpr measureExpr*)
+                                                        | nonConvertibleMeasureExpr+
+                                                    )
+                                                BRACE_CLOSE
+;
+canonicalExpr:                                  STAR measureExpr
+;
+measureExpr:                                    qualifiedName COLON unitExpr
+;
+nonConvertibleMeasureExpr:                      qualifiedName SEMI_COLON
+;
+unitExpr:                                       identifier ARROW codeBlock
+;
+
+
+// -------------------------------------- FUNCTION --------------------------------------
+
+nativeFunction:                                 NATIVE FUNCTION qualifiedName typeAndMultiplicityParameters? functionTypeSignature SEMI_COLON
+;
+functionTypeSignature:                          PAREN_OPEN (functionVariableExpression (COMMA functionVariableExpression)*)? PAREN_CLOSE COLON type multiplicity
+;
+functionDefinition:                             FUNCTION stereotypes? taggedValues? qualifiedName typeAndMultiplicityParameters? functionTypeSignature
+                                                constraints?
+                                                    BRACE_OPEN
+                                                        codeBlock
+                                                    BRACE_CLOSE
+                                                functionTestSuiteDef?
+;
+functionTestSuiteDef:                           BRACE_OPEN
+                                                    (simpleFunctionTest | simpleFunctionSuite | functionData)*
+                                                BRACE_CLOSE
+;
+simpleFunctionSuite:                            identifier
+                                                PAREN_OPEN
+                                                    (functionData)*
+                                                    simpleFunctionTest (simpleFunctionTest)*
+                                                PAREN_CLOSE
+;
+functionData:                                   storeProviderPointer COLON functionDataValue SEMI_COLON
+;
+storeProviderPointer:                           (storeProviderPointerType)? packageableElementPointer
+;
+storeProviderPointerType:                       PAREN_OPEN VALID_STRING PAREN_CLOSE
+;
+packageableElementPointer:                      qualifiedName
+;
+functionDataValue:                              (qualifiedName | externalFormatValue | embeddedData)
+;
+simpleFunctionTest:                             identifier (STRING)? PIPE identifier PAREN_OPEN functionParams PAREN_CLOSE EQUAL GREATER_THAN (externalFormatValue | primitiveValue) SEMI_COLON
+;
+externalFormatValue:                            contentType STRING
+;
+contentType:                                    PAREN_OPEN identifier PAREN_CLOSE
+;
+functionParams:                                 (primitiveValue (COMMA primitiveValue)*)?
+;
+embeddedData:                                   identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+
+// -------------------------------------- CONSTRAINT --------------------------------------
+
+constraints:                                    BRACKET_OPEN
+                                                    constraint (COMMA constraint)*
+                                                BRACKET_CLOSE
+;
+constraint:                                     simpleConstraint | complexConstraint
+;
+simpleConstraint:                               constraintId? combinedExpression
+;
+complexConstraint:                              identifier
+                                                    PAREN_OPEN
+                                                        constraintOwner?
+                                                        constraintExternalId?
+                                                        constraintFunction
+                                                        constraintEnforcementLevel?
+                                                        constraintMessage?
+                                                    PAREN_CLOSE
+;
+constraintOwner:                                CONSTRAINT_OWNER COLON identifier
+;
+constraintExternalId:                           CONSTRAINT_EXTERNAL_ID COLON STRING
+;
+constraintFunction:                             CONSTRAINT_FUNCTION COLON combinedExpression
+;
+constraintEnforcementLevel:                     CONSTRAINT_ENFORCEMENT COLON constraintEnforcementLevelType
+;
+constraintEnforcementLevelType:                 CONSTRAINT_ENFORCEMENT_LEVEL_ERROR | CONSTRAINT_ENFORCEMENT_LEVEL_WARN
+;
+constraintMessage:                              CONSTRAINT_MESSAGE COLON combinedExpression
+;
+constraintId:                                   identifier COLON
+;
+
+
+// -------------------------------------- PROJECTION --------------------------------------
+
+projection:                                     dsl | treePath
+;
+treePath:                                       type alias? stereotypes? taggedValues? treePathClassBody
+;
+treePathClassBody:                              BRACE_OPEN
+                                                    simplePropertyFilter?
+                                                    (derivedProperty | complexProperty)*
+                                                BRACE_CLOSE
+;
+alias:                                          AS identifier
+;
+simplePropertyFilter:                           STAR | ((PLUS | MINUS) (BRACKET_OPEN simpleProperty (COMMA simpleProperty)* BRACKET_CLOSE))
+;
+simpleProperty:                                 propertyRef stereotypes? taggedValues?
+;
+complexProperty:                                propertyRef alias? stereotypes? taggedValues? treePathClassBody?
+;
+derivedProperty:                                GREATER_THAN propertyRef BRACKET_OPEN codeBlock BRACKET_CLOSE alias? stereotypes? taggedValues? treePathClassBody?
+;
+propertyRef:                                    identifier (PAREN_OPEN (treePathPropertyParameterType (COMMA treePathPropertyParameterType)*)? PAREN_CLOSE)*
+;
+treePathPropertyParameterType:                  type multiplicity
+;
