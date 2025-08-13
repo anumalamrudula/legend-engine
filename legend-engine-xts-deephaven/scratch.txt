@@ -1,3 +1,94 @@
+parser grammar LakehouseMappingParserGrammar;
+
+import RelationalParserGrammar;
+
+options
+{
+    tokenVocab = LakehouseMappingLexerGrammar;
+}
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+unquotedIdentifier:                         VALID_STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | TO_BYTES_FUNCTION
+                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
+;
+
+identifier:                                 unquotedIdentifier | STRING
+;
+
+// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
+
+lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+                                                (propertyMapping (COMMA propertyMapping)*)?
+                                            EOF
+;
+ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
+;
+accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
+;
+propertyMapping:                            qualifiedName STAR? COLON operation (PIPE operation)?
+;
+mappingScopeInfo:                           unquotedIdentifier
+;
+
+// -------------------------------------- OPERATION --------------------------------------
+operation: booleanOperation
+         | functionExpression
+         | expression
+;
+
+functionExpression: databasePointer identifier ARROW identifier functionExpressionParameters
+;
+
+functionExpressionParameters: PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
+;
+
+functionOperationArgument: qualifiedName DOT identifier | databasePointer identifier | operation | anyLambda
+;
+
+anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_CLOSE
+;
+
+lambdaParam: identifier
+;
+
+expression: atomicExpression (equalNotEqual)?
+;
+
+equalNotEqual: (TEST_EQUAL | TEST_NOT_EQUAL) atomicExpression
+;
+
+atomicExpression: columnOperation
+                | constant
+                | anyLambda
+                | PAREN_OPEN operation PAREN_CLOSE
+;
+
+columnOperation: databasePointer? tableAliasColumnOperation
+               | variable DOT relationalIdentifier
+;
+
+variable: DOLLAR identifier
+;
+
+constant: STRING | INTEGER | FLOAT
+;
+
+// -------------------------------------- BUILDING BLOCK --------------------------------------
+
+scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+;
+databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+;
+relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+;
+
+
+
+
+
 package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
 
 import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
@@ -73,7 +164,7 @@ public class LakehouseClassMappingParseTreeWalker
         PropertyPointer propertyPointer = new PropertyPointer();
         propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName());
         propertyPointer._class = lakehouseClassMapping._class;
-        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         propertyMapping.property = propertyPointer;
         propertyMapping.source = lakehouseClassMapping.id;
 
@@ -82,47 +173,31 @@ public class LakehouseClassMappingParseTreeWalker
         // Handle projection if present
         if (ctx.operation().size() > 1) // Second operation is the projection
         {
-            if (!(operation instanceof ElementWithLakeJoins))
-            {
-                ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
-                elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-                elementWithJoins.relationalElement = visitOperation(ctx.operation(1), lakehouseClassMapping.ingestPtr);
+            ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
+            elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
-                // Extract join information if the operation is a join
-                if (operation instanceof DynaFunc && "join".equals(((DynaFunc) operation).funcName))
+            // Extract join information if the operation is a join
+            if (operation instanceof DynaFunc && "join".equals(((DynaFunc) operation).funcName))
+            {
+                DynaFunc joinFunc = (DynaFunc) operation;
+                if (joinFunc.parameters.size() == 4) // >= 3
                 {
-                    DynaFunc joinFunc = (DynaFunc) operation;
-                    if (joinFunc.parameters.size() >= 3)
+                    if (joinFunc.parameters.get(0) instanceof IngestRelationColumn &&
+                        joinFunc.parameters.get(1) instanceof IngestRelationColumn &&
+                        joinFunc.parameters.get(2) instanceof Literal &&
+                        joinFunc.parameters.get(3) instanceof DynaFunc)
                     {
-                        if (joinFunc.parameters.get(0) instanceof IngestRelationColumn &&
-                            joinFunc.parameters.get(1) instanceof IngestRelationColumn &&
-                            joinFunc.parameters.get(2) instanceof Literal &&
-                            joinFunc.parameters.get(3) instanceof DynaFunc)
-                        {
-                            elementWithJoins.source1 = ((IngestRelationColumn) joinFunc.parameters.get(0)).ingestAccessor;
-                            elementWithJoins.source2 = ((IngestRelationColumn) joinFunc.parameters.get(1)).ingestAccessor;
-                            elementWithJoins.joinType = ((Literal) joinFunc.parameters.get(2)).value.toString();
-                            elementWithJoins.condition = (DynaFunc) joinFunc.parameters.get(3);
-                        }
-                        else
-                        {
-                            throw new EngineException("Invalid join operation parameters", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-                        }
+                        elementWithJoins.source1 = ((IngestRelationColumn) joinFunc.parameters.get(0)).ingestAccessor;
+                        elementWithJoins.source2 = ((IngestRelationColumn) joinFunc.parameters.get(1)).ingestAccessor; // Note: source2 will be set correctly in visitFunctionExpression
+                        elementWithJoins.joinType = ((Literal) joinFunc.parameters.get(2)).value.toString();
+                        elementWithJoins.condition = (DynaFunc) joinFunc.parameters.get(3);
                     }
                 }
-                else
-                {
-                    throw new EngineException("Projection is only supported with join operations", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-                }
+            }
 
-                propertyMapping.relationalOperation = elementWithJoins;
-            }
-            else
-            {
-                ElementWithLakeJoins elementWithJoins = (ElementWithLakeJoins) operation;
-                elementWithJoins.relationalElement = visitOperation(ctx.operation(1), lakehouseClassMapping.ingestPtr);
-                propertyMapping.relationalOperation = elementWithJoins;
-            }
+            // Set the projection as the relationalElement
+            elementWithJoins.relationalElement = visitOperation(ctx.operation(1), lakehouseClassMapping.ingestPtr);
+            propertyMapping.relationalOperation = elementWithJoins;
         }
         else
         {
@@ -181,7 +256,7 @@ public class LakehouseClassMappingParseTreeWalker
         String sourceDb = visitDatabasePointer(ctx.databasePointer());
         String sourceTable = PureGrammarParserUtility.fromIdentifier(ctx.identifier(0));
         sourceColumn.ingestAccessor.path = Lists.mutable.with(sourceDb, sourceTable);
-        sourceColumn.column = null; // Table-level reference
+        // sourceColumn.column = null; // Table-level reference
 
         // Parse function parameters
         if (ctx.functionExpressionParameters() != null)
@@ -191,6 +266,7 @@ public class LakehouseClassMappingParseTreeWalker
             if (operation.funcName.equals("join") && paramsCtx.functionOperationArgument().size() >= 3)
             {
                 // For join, store source and target accessors for lambda parameters
+                // IngestRelationColumn targetColumn = (IngestRelationColumn) visitFunctionOperationArgument(paramsCtx.functionOperationArgument(0), ingestPtr);
                 RelationalOperationElement targetArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(0), ingestPtr);
                 if (!(targetArg instanceof IngestRelationColumn))
                 {
@@ -200,27 +276,42 @@ public class LakehouseClassMappingParseTreeWalker
                 lambdaAccessors.add(sourceColumn.ingestAccessor); // x
                 lambdaAccessors.add(targetColumn.ingestAccessor); // y
 
-                // Update ElementWithLakeJoins if this is part of a property mapping
+                // Update ElementWithLakeJoins if this is part of a join
                 if (ctx.getParent() instanceof LakehouseMappingParserGrammar.PropertyMappingContext)
                 {
+                    LakehouseMappingParserGrammar.PropertyMappingContext parentCtx = (LakehouseMappingParserGrammar.PropertyMappingContext) ctx.getParent();
                     ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
                     elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
                     elementWithJoins.source1 = sourceColumn.ingestAccessor;
                     elementWithJoins.source2 = targetColumn.ingestAccessor;
-                    RelationalOperationElement joinTypeArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr);
-                    if (!(joinTypeArg instanceof Literal))
+                    elementWithJoins.joinType = ((Literal) visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr)).value.toString();
+                    elementWithJoins.condition = (DynaFunc) visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), lambdaAccessors);
+                    if (parentCtx.operation().size() > 1)
                     {
-                        throw new EngineException("Join type must be a literal (e.g., JoinKind.INNER)", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(1)), EngineErrorType.PARSER);
+                        elementWithJoins.relationalElement = visitOperation(parentCtx.operation(1), ingestPtr);
                     }
-                    elementWithJoins.joinType = ((Literal) joinTypeArg).value.toString();
-                    RelationalOperationElement conditionArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), lambdaAccessors);
-                    if (!(conditionArg instanceof DynaFunc))
-                    {
-                        throw new EngineException("Join condition must be a lambda", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(2)), EngineErrorType.PARSER);
-                    }
-                    elementWithJoins.condition = (DynaFunc) conditionArg;
                     return elementWithJoins;
                 }
+//                if (ctx.getParent() instanceof LakehouseMappingParserGrammar.PropertyMappingContext)
+//                {
+//                    ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
+//                    elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//                    elementWithJoins.source1 = sourceColumn.ingestAccessor;
+//                    elementWithJoins.source2 = targetColumn.ingestAccessor;
+//                    RelationalOperationElement joinTypeArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr);
+//                    if (!(joinTypeArg instanceof Literal))
+//                    {
+//                        throw new EngineException("Join type must be a literal (e.g., JoinKind.INNER)", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(1)), EngineErrorType.PARSER);
+//                    }
+//                    elementWithJoins.joinType = ((Literal) joinTypeArg).value.toString();
+//                    RelationalOperationElement conditionArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), lambdaAccessors);
+//                    if (!(conditionArg instanceof DynaFunc))
+//                    {
+//                        throw new EngineException("Join condition must be a lambda", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(2)), EngineErrorType.PARSER);
+//                    }
+//                    elementWithJoins.condition = (DynaFunc) conditionArg;
+//                    return elementWithJoins;
+//                }
 
                 operation.parameters.add(sourceColumn);
                 operation.parameters.add(targetColumn);
@@ -303,9 +394,9 @@ public class LakehouseClassMappingParseTreeWalker
         {
             ElementWithLakeJoins operation = new ElementWithLakeJoins();
             operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            operation.source1 = ingestPtr; // Use ingestPtr for source1
+            operation.source1 = ingestPtr; // Use ingestPtr for source1, as joinOperation may not specify source explicitly
             operation.source2 = null; // Join operation may not specify second source
-            operation.joinType = "INNER"; // Default join type
+            operation.joinType = "INNER"; // Default join type for joinOperation
             if (ctx.joinOperation().booleanOperation() != null)
             {
                 operation.condition = (DynaFunc) visitBooleanOperation(ctx.joinOperation().booleanOperation(), ingestPtr);
@@ -347,19 +438,43 @@ public class LakehouseClassMappingParseTreeWalker
 
     private String visitAtomicOperator(LakehouseMappingParserGrammar.AtomicOperatorContext ctx)
     {
-        if (ctx.EQUAL() != null) return "equal";
-        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null) return "notEqual";
-        if (ctx.GREATER_THAN() != null) return "greaterThan";
-        if (ctx.LESS_THAN() != null) return "lessThan";
-        if (ctx.GREATER_OR_EQUAL() != null) return "greaterThanEqual";
-        if (ctx.LESS_OR_EQUAL() != null) return "lessThanEqual";
+        if (ctx.EQUAL() != null)
+        {
+            return "equal";
+        }
+        if (ctx.TEST_NOT_EQUAL() != null || ctx.NOT_EQUAL() != null)
+        {
+            return "notEqual";
+        }
+        if (ctx.GREATER_THAN() != null)
+        {
+            return "greaterThan";
+        }
+        if (ctx.LESS_THAN() != null)
+        {
+            return "lessThan";
+        }
+        if (ctx.GREATER_OR_EQUAL() != null)
+        {
+            return "greaterThanEqual";
+        }
+        if (ctx.LESS_OR_EQUAL() != null)
+        {
+            return "lessThanEqual";
+        }
         throw new EngineException("Unsupported operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private String visitAtomicSelfOperator(LakehouseMappingParserGrammar.AtomicSelfOperatorContext ctx)
     {
-        if (ctx.IS_NULL() != null) return "isNull";
-        if (ctx.IS_NOT_NULL() != null) return "isNotNull";
+        if (ctx.IS_NULL() != null)
+        {
+            return "isNull";
+        }
+        if (ctx.IS_NOT_NULL() != null)
+        {
+            return "isNotNull";
+        }
         throw new EngineException("Unsupported self operator", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
@@ -417,11 +532,11 @@ public class LakehouseClassMappingParseTreeWalker
 
     private RelationalOperationElement visitFunctionOperationArgument(LakehouseMappingParserGrammar.FunctionOperationArgumentContext ctx, Object ingestPtr)
     {
-        if (ctx.qualifiedName() != null)
+        if (ctx.qualifiedName() != null && ctx.identifier() != null)
         {
             Literal literal = new Literal();
             literal.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-            literal.value = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+            literal.value = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) + '.' + PureGrammarParserUtility.fromIdentifier(ctx.identifier());
             return literal;
         }
         else if (ctx.operation() != null)
@@ -431,7 +546,7 @@ public class LakehouseClassMappingParseTreeWalker
         }
         else if (ctx.anyLambda() != null)
         {
-            return visitAnyLambda(ctx.anyLambda(), ingestPtr instanceof List ? ((List<IngestRelationAccessor>) ingestPtr).get(1) : ingestPtr);
+            return visitAnyLambda(ctx.anyLambda(), ingestPtr instanceof List ? ((List<IngestRelationAccessor>) ingestPtr).get(1) : (IngestRelationAccessor) ingestPtr);
         }
         else if (ctx.databasePointer() != null && ctx.identifier() != null)
         {
@@ -442,7 +557,7 @@ public class LakehouseClassMappingParseTreeWalker
             String databasePath = visitDatabasePointer(ctx.databasePointer());
             String tableName = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
             tableRef.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
-            tableRef.column = null; // Table-level reference
+            tableRef.column = null; // Table-level reference, no column
             return tableRef;
         }
         throw new EngineException("Unsupported function argument syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
@@ -497,7 +612,7 @@ public class LakehouseClassMappingParseTreeWalker
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.ingestAccessor = new IngestRelationAccessor();
         column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
         String tableName = ctx.TARGET() != null ? ctx.TARGET().getText() : null;
         if (tableName == null)
         {
@@ -516,7 +631,7 @@ public class LakehouseClassMappingParseTreeWalker
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.ingestAccessor = new IngestRelationAccessor();
         column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
         String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
                 ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
                 : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
@@ -529,8 +644,282 @@ public class LakehouseClassMappingParseTreeWalker
         }
         else
         {
-            column.column = null; // Allow table-level reference
+            throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
         return column;
     }
 }
+
+
+
+
+
+
+package com.gs.alloy.lakehouse.runtime.model.grammar.serializer;
+
+import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.runtime.LakehouseRuntime;
+import com.gs.alloy.lakehouse.runtime.model.grammar.parser.LakehouseRuntimeParserExtension;
+import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+
+public class LakehouseRuntimeGrammarComposerExtension implements PureGrammarComposerExtension
+{
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "LakehouseRuntime");
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    {
+        return Collections.singletonList((elements, context, composedSections) ->
+        {
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof PackageableRuntime && ((PackageableRuntime) e).runtimeValue instanceof LakehouseRuntime), Lists.mutable.empty());
+            return composableElements.isEmpty()
+                    ? null
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(element -> renderLakehouseRuntime(((PackageableRuntime) element), context)).makeString("###" + LakehouseRuntimeParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+        });
+    }
+
+    private static String renderLakehouseRuntime(PackageableRuntime lakeRuntime, PureGrammarComposerContext context)
+    {
+        String runtimeType = "LakehouseRuntime ";
+        return runtimeType + PureGrammarComposerUtility.convertPath(lakeRuntime.getPath()) + "\n" +
+                "{" +
+                     renderRuntimeValue((LakehouseRuntime) lakeRuntime.runtimeValue, 1) +
+                "\n}";
+    }
+
+    private static String renderRuntimeValue(LakehouseRuntime runtimeValue, int baseIndentation)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (runtimeValue.environment != null && runtimeValue.warehouse != null)
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("environment: '").append(runtimeValue.environment).append("';");
+            appendTabString(builder.append("\n"), baseIndentation).append("warehouse: '").append(runtimeValue.warehouse).append("';");
+        }
+        else if (runtimeValue.environment == null && runtimeValue.warehouse == null && runtimeValue.connectionPointer != null)
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(runtimeValue.connectionPointer.connection)).append(";");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
+    {
+        return Lists.fixedSize.with((elements, context, sectionName) ->
+        {
+            if (!LakehouseRuntimeParserExtension.NAME.equals(sectionName))
+            {
+                return null;
+            }
+            return ListIterate.collect(elements, element ->
+            {
+                if (element instanceof PackageableRuntime)
+                {
+                    return renderLakehouseRuntime((PackageableRuntime) element, context);
+                }
+                return "/* Can't transform element '" + element.getPath() + "' in this section */";
+            }).makeString("\n\n");
+        });
+    }
+
+    @Override
+    public List<Function2<ClassMapping, PureGrammarComposerContext, String>> getExtraClassMappingComposers()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with((classMapping, context) ->
+        {
+            if (classMapping instanceof LakehouseClassMapping)
+            {
+                LakehouseClassMapping lakehouseClassMapping = (LakehouseClassMapping) classMapping;
+                StringBuilder builder = new StringBuilder();
+                builder.append(": ").append(LakehouseRuntimeParserExtension.LAKEHOUSE_MAPPING_ELEMENT_TYPE).append("\n");
+                builder.append(getTabString()).append("{\n");
+                String mapping = renderLakehouseClassMapping(lakehouseClassMapping);
+                builder.append(mapping);
+                builder.append(getTabString()).append("}");
+                return builder.toString();
+            }
+            return null;
+        });
+    }
+
+    private String renderLakehouseClassMapping(LakehouseClassMapping lakehouseClassMapping)
+    {
+            StringBuilder builder = new StringBuilder();
+            if (lakehouseClassMapping.ingestPtr != null)
+            {
+                IngestRelationAccessor tmp = lakehouseClassMapping.ingestPtr;
+                appendTabString(builder, 2).append("~ingestSource ");
+                builder.append("[").append(tmp.path.get(0)).append("]");
+                builder.append(tmp.path.get(1));
+                builder.append("\n");
+            }
+            if (!lakehouseClassMapping.propertyMappings.isEmpty())
+            {
+                builder.append(LazyIterate.collect(lakehouseClassMapping.propertyMappings, propertyMapping ->
+                        renderRelationalPropertyMapping(propertyMapping, false)).makeString(",\n"));
+                builder.append("\n");
+            }
+            return builder.toString();
+        }
+
+    private static boolean checkNullOrEmpty(String string)
+    {
+        return string == null || string.isEmpty();
+    }
+    
+    private static String renderRelationalPropertyMapping(PropertyMapping relationalPropertyMapping, Boolean renderSourceId)
+    {
+        LakehousePropertyMapping lakehousePropertyMapping = (LakehousePropertyMapping) relationalPropertyMapping;
+        String propertyString = getTabString(2) + (relationalPropertyMapping.localMappingProperty != null
+                ? ("+" + PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) + ": " +
+                relationalPropertyMapping.localMappingProperty.type + "[" +
+                HelperDomainGrammarComposer.renderMultiplicity(relationalPropertyMapping.localMappingProperty.multiplicity) + "]")
+                : PureGrammarComposerUtility.convertIdentifier(relationalPropertyMapping.property.property) +
+                (checkNullOrEmpty(relationalPropertyMapping.target) ? "" : "[" + (renderSourceId ?
+                        (checkNullOrEmpty(relationalPropertyMapping.source) ? "" : (relationalPropertyMapping.source + ",")) : "") +
+                        relationalPropertyMapping.target + "]")
+        ) + ": ";
+        return propertyString + renderRelationalOperationElement(lakehousePropertyMapping.relationalOperation);
+    }
+
+    private static String renderRelationalOperationElement(RelationalOperationElement operation)
+    {
+        if (operation instanceof DynaFunc)
+        {
+            DynaFunc func = (DynaFunc) operation;
+            StringBuilder builder = new StringBuilder();
+            builder.append(PureGrammarComposerUtility.convertIdentifier(func.funcName));
+            builder.append("(");
+            builder.append(ListIterate.collect(func.parameters, param -> renderRelationalOperationElement(param)).makeString(", "));
+            builder.append(")");
+            return builder.toString();
+        }
+        else if (operation instanceof IngestRelationColumn)
+        {
+            IngestRelationColumn column = (IngestRelationColumn) operation;
+            return "[" + column.ingestAccessor.path.get(0) + "]" + column.ingestAccessor.path.get(1) + "." + column.column;
+        }
+        else if (operation instanceof Literal)
+        {
+            Literal literal = (Literal) operation;
+            if (literal.value instanceof String)
+            {
+                return PureGrammarComposerUtility.convertString((String) literal.value, true);
+            }
+            return literal.value.toString();
+        }
+        throw new IllegalStateException("Unsupported operation type: " + operation.getClass().getSimpleName());
+    }
+}
+
+
+
+
+    @Test
+    public void testLakehouseMappingJoin()
+    {
+        test("###Lakehouse\n" +
+                "Ingest test::ingest::FirmIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
+                "[\n" +
+                "   Firm(\n" +
+                "      id: Varchar(200)[1],\n" +
+                "      legalName: Varchar(200)[1]\n" +
+                "   )\n" +
+                "   DP10;\n" +
+                "]\n" +
+                "\n" +
+                "\n" +
+                "Ingest test::ingest::PersonIngest BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=test\n" +
+                "[\n" +
+                "   Person(\n" +
+                "      last_name: Varchar(200)[1],\n" +
+                "      firm_id: Varchar(200)[1]\n" +
+                "   )\n" +
+                "   DP10\n" +
+                "   pk=[firm_id];\n" +
+                "]\n" +
+                "\n" +
+//                "###Pure\n" +
+//                "function test::myFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+//                "{\n" +
+//                "  test::model::Person.all()->project(~[firmID:x|$x.firm_id, Name:x|$x.lastName])->from(test::mapping::MyMap1, my::DuckDBRuntime)\n" +
+//                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: String[1];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::model::Person\n" +
+                "{\n" +
+                "  lastName: String[1];\n" +
+                "  firm_id: Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::MyMap1\n" +
+                "(\n" +
+                "  test::model::Person: Lakehouse\n" +
+                "  {\n" +
+                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
+                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name),\n" +
+                "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id\n" +
+                "  }\n" +
+                ")\n"
+        );
+    }
+
+
+
+
+java.lang.IllegalStateException: Unsupported operation type: ElementWithLakeJoins
+
+	at com.gs.alloy.lakehouse.runtime.model.grammar.serializer.LakehouseRuntimeGrammarComposerExtension.renderRelationalOperationElement(LakehouseRuntimeGrammarComposerExtension.java:185)
+	at com.gs.alloy.lakehouse.runtime.model.grammar.serializer.LakehouseRuntimeGrammarComposerExtension.renderRelationalPropertyMapping(LakehouseRuntimeGrammarComposerExtension.java:156)
+	at com.gs.alloy.lakehouse.runtime.model.grammar.serializer.LakehouseRuntimeGrammarComposerExtension.lambda$renderLakehouseClassMapping$cc8c6599$1(LakehouseRuntimeGrammarComposerExtension.java:133)
+	at org.eclipse.collections.impl.block.factory.Functions$BindProcedure.value(Functions.java:1127)
+	at org.eclipse.collections.impl.utility.internal.RandomAccessListIterate.forEach(RandomAccessListIterate.java:624)
+	at org.eclipse.collections.impl.utility.ArrayListIterate.forEach(ArrayListIterate.java:784)
+	at org.eclipse.collections.impl.utility.Iterate.forEach(Iterate.java:135)
+	at org.eclipse.collections.impl.lazy.CollectIterable.each(CollectIterable.java:49)
+	at org.eclipse.collections.impl.AbstractRichIterable.forEach(AbstractRichIterable.java:581)
+	at org.eclipse.collections.impl.AbstractRichIterable.appendString(AbstractRichIterable.java:636)
+	at org.eclipse.collections.api.RichIterable.makeString(RichIterable.java:2011)
+	at org.eclipse.collections.api.RichIterable.makeString(RichIterable.java:1998)
+	at com.gs.alloy.lakehouse.runtime.model.grammar.serializer.LakehouseRuntimeGrammarComposerExtension.renderLakehouseClassMapping(LakehouseRuntimeGrammarComposerExtension.java:133)
+	at com.gs.alloy.lakehouse.runtime.model.grammar.serializer.LakehouseRuntimeGrammarComposerExtension.lambda$getExtraClassMappingComposers$ba49d393$1(LakehouseRuntimeGrammarComposerExtension.java:110)
