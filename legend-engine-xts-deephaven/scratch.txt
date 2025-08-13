@@ -152,6 +152,97 @@ public class LakehouseClassMappingParseTreeWalker
         return operationElement;
     }
 
+    private RelationalOperationElement visitAtomicOperation(LakehouseMappingParserGrammar.AtomicOperationContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        RelationalOperationElement operationElement;
+        if (ctx.groupOperation() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = "group";
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(visitOperation(ctx.groupOperation().operation(), ingestPtr));
+            operationElement = operation;
+        }
+        else if (ctx.functionOperation() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.functionOperation().identifier());
+            operation.parameters = ListIterate.collect(ctx.functionOperation().functionOperationArgument(), argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr));
+            operationElement = operation;
+        }
+        else if (ctx.columnOperation() != null)
+        {
+            operationElement = visitColumnOperation(ctx.columnOperation(), ingestPtr);
+        }
+        else if (ctx.constant() != null)
+        {
+            Literal constant = new Literal();
+            constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            if (ctx.constant().STRING() != null)
+            {
+                constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
+            }
+            else if (ctx.constant().INTEGER() != null)
+            {
+                constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
+            }
+            else if (ctx.constant().FLOAT() != null)
+            {
+                constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
+            }
+            else
+            {
+                throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            operationElement = constant;
+        }
+        else if (ctx.joinOperation() != null)
+        {
+            ElementWithJoins operation = new ElementWithJoins();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.joins = new ArrayList<>();
+            operation.joins.addAll(visitJoinSequence(ctx.joinOperation().joinSequence(), ingestPtr));
+            if (ctx.joinOperation().tableAliasColumnOperation() != null)
+            {
+                operation.relationalElement = visitTableAliasColumnOperation(ctx.joinOperation().tableAliasColumnOperation(), ingestPtr);
+            }
+            else if (ctx.joinOperation().booleanOperation() != null)
+            {
+                operation.relationalElement = visitBooleanOperation(ctx.joinOperation().booleanOperation(), ingestPtr);
+            }
+            operationElement = operation;
+        }
+        else
+        {
+            throw new EngineException("Unsupported atomic operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+
+        if (ctx.atomicOperationRight() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(operationElement);
+            if (ctx.atomicOperationRight().atomicOperator() != null)
+            {
+                operation.funcName = visitAtomicOperator(ctx.atomicOperationRight().atomicOperator());
+                operation.parameters.add(visitAtomicOperation(ctx.atomicOperationRight().atomicOperation(), ingestPtr));
+            }
+            else if (ctx.atomicOperationRight().atomicSelfOperator() != null)
+            {
+                operation.funcName = visitAtomicSelfOperator(ctx.atomicOperationRight().atomicSelfOperator());
+            }
+            else
+            {
+                throw new EngineException("Unsupported atomic operation right syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            operationElement = operation;
+        }
+        return operationElement;
+    }
+
     private RelationalOperationElement visitFunctionExpression(LakehouseMappingParserGrammar.FunctionExpressionContext ctx, IngestRelationAccessor ingestPtr)
     {
         DynaFunc operation = new DynaFunc();
@@ -366,5 +457,29 @@ public class LakehouseClassMappingParseTreeWalker
             throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
         return column;
+    }
+
+    private List<JoinPointer> visitJoinSequence(LakehouseMappingParserGrammar.JoinSequenceContext ctx, IngestRelationAccessor ingestPtr)
+    {
+        List<JoinPointer> joins = new ArrayList<>();
+        String database = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        joins.add(visitJoinPointer(ctx.joinPointer(), ctx.identifier() != null ? PureGrammarParserUtility.fromIdentifier(ctx.identifier()) : null, ingestPtr));
+        for (LakehouseMappingParserGrammar.JoinPointerFullContext joinPointerFullContext : ctx.joinPointerFull())
+        {
+            String joinType = joinPointerFullContext.identifier() != null ? PureGrammarParserUtility.fromIdentifier(joinPointerFullContext.identifier()) : null;
+            String joinDb = joinPointerFullContext.databasePointer() != null ? visitDatabasePointer(joinPointerFullContext.databasePointer()) : database;
+            joins.add(visitJoinPointer(joinPointerFullContext.joinPointer(), joinType, ingestPtr));
+        }
+        return joins;
+    }
+
+    private JoinPointer visitJoinPointer(LakehouseMappingParserGrammar.JoinPointerContext ctx, String joinType, IngestRelationAccessor ingestPtr)
+    {
+        JoinPointer joinPointer = new JoinPointer();
+        joinPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        joinPointer.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        joinPointer.joinType = joinType != null ? joinType : "INNER";
+        joinPointer.db = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        return joinPointer;
     }
 }
