@@ -1,8 +1,24 @@
-columnOperation:                            databasePointer? tableAliasColumnOperation
-;
-tableAliasColumnOperation:                  tableAliasColumnOperationWithTarget | tableAliasColumnOperationWithScopeInfo
-;
-tableAliasColumnOperationWithTarget:        TARGET DOT relationalIdentifier
-;
-tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
+org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Unexpected token '=='. Valid alternatives: ['is null', 'is not null', 'and', 'or', '<>', '=', '!=', '<', '<=', '>', '>=']
+
+	at org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener.syntaxError(ParserErrorListener.java:105)
+	at org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)
+	at org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportInputMismatch(DefaultErrorStrategy.java:327)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportError(DefaultErrorStrategy.java:139)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.anyLambda(LakehouseMappingParserGrammar.java:996)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionOperationArgument(LakehouseMappingParserGrammar.java:892)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionExpressionParameters(LakehouseMappingParserGrammar.java:820)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionExpression(LakehouseMappingParserGrammar.java:749)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.operation(LakehouseMappingParserGrammar.java:685)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.propertyMapping(LakehouseMappingParserGrammar.java:583)
+	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.lakehouseClassMapping(LakehouseMappingParserGrammar.java:404)
+
+
+
+
+TEST_EQUAL:                                 '==';
+
+
+
+equalNotEqual:                                  (TEST_EQUAL | TEST_NOT_EQUAL) combinedArithmeticOnly
 ;
