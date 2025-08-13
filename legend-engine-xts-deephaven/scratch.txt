@@ -1,3 +1,157 @@
+@Test
+    public void testLakehouseMappingJoin()
+    {
+        test("###Lakehouse\n" +
+                "Ingest test::ingest::FirmIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
+                "[\n" +
+                "   Firm(\n" +
+                "      id: Varchar(200)[1],\n" +
+                "      legalName: Varchar(200)[1]\n" +
+                "   )\n" +
+                "   DP10;\n" +
+                "]\n" +
+                        "\n" +
+                "\n" +
+                "Ingest test::ingest::PersonIngest BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=test\n" +
+                "[\n" +
+                "   Person(\n" +
+                "      last_name: Varchar(200)[1],\n" +
+                "      firm_id: Varchar(200)[1]\n" +
+                "   )\n" +
+                "   DP10\n" +
+                "   pk=[firm_id];\n" +
+                "]\n" +
+                "\n" +
+//                "###Pure\n" +
+//                "function test::myFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+//                "{\n" +
+//                "  test::model::Person.all()->project(~[firmID:x|$x.firm_id, Name:x|$x.lastName])->from(test::mapping::MyMap1, my::DuckDBRuntime)\n" +
+//                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: String[1];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::model::Person\n" +
+                "{\n" +
+                "  lastName: String[1];\n" +
+                "  firm_id: Firm[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::MyMap1\n" +
+                "(\n" +
+                "  test::model::Person: Lakehouse\n" +
+                "  {\n" +
+                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
+                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name),\n" +
+////                "    firm_id: [test::ingest::PersonIngest]Person.firm_id\n" +
+              "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id\n" +
+//                "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id})\n" +
+                "  }\n" +
+                ")\n"
+        );
+    }
+
+
+
+
+parser grammar LakehouseMappingParserGrammar;
+
+import RelationalParserGrammar;
+
+options
+{
+    tokenVocab = LakehouseMappingLexerGrammar;
+}
+
+// -------------------------------------- IDENTIFIER --------------------------------------
+
+unquotedIdentifier:                         VALID_STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | TO_BYTES_FUNCTION
+                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
+;
+
+identifier:                                 unquotedIdentifier | STRING
+;
+
+// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
+
+lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+                                                (propertyMapping (COMMA propertyMapping)*)?
+                                            EOF
+;
+ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
+;
+accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
+;
+propertyMapping:                            qualifiedName STAR? COLON operation (PIPE tableAliasColumnOperation)
+;
+mappingScopeInfo:                           unquotedIdentifier
+;
+
+// -------------------------------------- OPERATION --------------------------------------
+operation: booleanOperation
+         | functionExpression
+         | expression
+;
+
+functionExpression: databasePointer identifier ARROW identifier functionExpressionParameters
+;
+
+functionExpressionParameters: PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
+;
+
+functionOperationArgument: operation | anyLambda | qualifiedName
+;
+
+anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_CLOSE
+;
+
+lambdaParam: identifier
+;
+
+expression: atomicExpression (equalNotEqual)?
+;
+
+equalNotEqual: (TEST_EQUAL | TEST_NOT_EQUAL) atomicExpression
+;
+
+atomicExpression: columnOperation
+                | constant
+                | anyLambda
+                | PAREN_OPEN operation PAREN_CLOSE
+;
+
+columnOperation: databasePointer? tableAliasColumnOperation
+               | variable DOT relationalIdentifier
+;
+
+variable: DOLLAR identifier
+;
+
+constant: STRING | INTEGER | FLOAT
+;
+
+// -------------------------------------- BUILDING BLOCK --------------------------------------
+
+scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+;
+databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+;
+relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+;
+
+
+
+
+
 package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
 
 import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
@@ -67,6 +221,23 @@ public class LakehouseClassMappingParseTreeWalker
         lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
     }
 
+//    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+//    {
+//        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
+//        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        PropertyPointer propertyPointer = new PropertyPointer();
+//        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(0));
+//        propertyPointer._class = lakehouseClassMapping._class;
+//        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        propertyMapping.property = propertyPointer;
+//        propertyMapping.source = lakehouseClassMapping.id;
+//        propertyMapping.relationalColumn = new IngestRelationColumn();
+//        propertyMapping.relationalColumn.ingestAccessor = lakehouseClassMapping.ingestPtr;
+//        propertyMapping.relationalColumn.Column = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName(2));
+//        propertyMapping.property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        return propertyMapping;
+//    }
+
     private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
     {
         LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
@@ -74,10 +245,13 @@ public class LakehouseClassMappingParseTreeWalker
         PropertyPointer propertyPointer = new PropertyPointer();
         propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName());
         propertyPointer._class = lakehouseClassMapping._class;
-        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         propertyMapping.property = propertyPointer;
         propertyMapping.source = lakehouseClassMapping.id;
+
+        // Parse the operation
         propertyMapping.relationalOperation = visitOperation(ctx.operation(), lakehouseClassMapping.ingestPtr);
+
         return propertyMapping;
     }
 
@@ -280,7 +454,7 @@ public class LakehouseClassMappingParseTreeWalker
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.ingestAccessor = new IngestRelationAccessor();
         column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
         String tableName = ctx.TARGET() != null ? ctx.TARGET().getText() : null;
         if (tableName == null)
         {
@@ -299,7 +473,7 @@ public class LakehouseClassMappingParseTreeWalker
         column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         column.ingestAccessor = new IngestRelationAccessor();
         column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        String databasePath = ingestPtr.path.get(0); // Use the ingest source database
         String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
                 ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
                 : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
