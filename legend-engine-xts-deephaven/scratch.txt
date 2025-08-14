@@ -1,200 +1,433 @@
-private static String renderRelationalOperationElement(RelationalOperationElement operation)
-{
-    if (operation instanceof DynaFunc)
-    {
-        DynaFunc func = (DynaFunc) operation;
+package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
 
-        // Special handling for lambda functions
-        if ("lambda".equals(func.funcName))
+import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.ElementWithLakeJoins;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.IngestRelationColumn;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehouseClassMapping;
+import com.gs.alloy.lakehouse.protocol.pure.v1.model.packageableElement.mapping.LakehousePropertyMapping;
+import com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar;
+import org.antlr.v4.runtime.CharStream;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class LakehouseClassMappingParseTreeWalker
+{
+    private final CharStream input;
+    private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserContext parserContext;
+
+    public LakehouseClassMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext)
+    {
+        this.input = input;
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.parserContext = parserContext;
+    }
+
+    // Simple context class for lambda parameters
+    private static class LambdaContext
+    {
+        final Map<String, IngestRelationAccessor> parameterMap = new HashMap<>();
+        
+        void addParameter(String name, IngestRelationAccessor accessor)
         {
-            return renderLambdaFunction(func);
+            parameterMap.put(name, accessor);
         }
         
-        // Special handling for comparison operators in lambda context
-        if (("equal".equals(func.funcName) || "notEqual".equals(func.funcName)) && func.parameters.size() == 2)
+        IngestRelationAccessor getAccessor(String paramName)
         {
-            // Check if we're in a lambda context by examining the parameters
-            RelationalOperationElement left = func.parameters.get(0);
-            RelationalOperationElement right = func.parameters.get(1);
-            
-            // If either parameter is a column reference from a lambda parameter, use special rendering
-            if (isLambdaParameterColumn(left) || isLambdaParameterColumn(right))
-            {
-                String leftStr = renderLambdaOperand(left);
-                String rightStr = renderLambdaOperand(right);
-                String operator = "equal".equals(func.funcName) ? " == " : " != ";
-                return leftStr + operator + rightStr;
-            }
+            return parameterMap.get(paramName);
         }
+    }
+
+    private String visitDatabasePointer(LakehouseMappingParserGrammar.DatabasePointerContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) : null;
+    }
+
+    private String visitMappingScopeInfo(LakehouseMappingParserGrammar.MappingScopeInfoContext ctx)
+    {
+        return ctx != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : null;
+    }
+
+    public void visitLakehouseClassMapping(LakehouseMappingParserGrammar.LakehouseClassMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        if (ctx.ingestSrc() != null)
+        {
+            IngestRelationAccessor tmp = new IngestRelationAccessor();
+            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.ingestSrc().databasePointer()), ctx.ingestSrc().qualifiedName().getText());
+            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestSrc());
+            lakehouseClassMapping.ingestPtr = tmp;
+        }
+        else if (ctx.accessPointSrc() != null)
+        {
+            IngestRelationAccessor tmp = new IngestRelationAccessor();
+            tmp.path = Lists.mutable.with(visitDatabasePointer(ctx.accessPointSrc().databasePointer()), ctx.accessPointSrc().qualifiedName().getText());
+            tmp.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.accessPointSrc());
+            lakehouseClassMapping.ingestPtr = tmp;
+        }
+        lakehouseClassMapping.propertyMappings = ListIterate.collect(ctx.propertyMapping(), propertyMappingContext -> visitPropertyMapping(propertyMappingContext, classMappingContext, lakehouseClassMapping));
+    }
+
+    private LakehousePropertyMapping visitPropertyMapping(LakehouseMappingParserGrammar.PropertyMappingContext ctx, MappingParserGrammar.MappingElementContext classMappingContext, LakehouseClassMapping lakehouseClassMapping)
+    {
+        LakehousePropertyMapping propertyMapping = new LakehousePropertyMapping();
+        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        PropertyPointer propertyPointer = new PropertyPointer();
+        propertyPointer.property = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName());
+        propertyPointer._class = lakehouseClassMapping._class;
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        propertyMapping.property = propertyPointer;
+        propertyMapping.source = lakehouseClassMapping.id;
+
+        RelationalOperationElement operation = visitOperation(ctx.operation(0), lakehouseClassMapping.ingestPtr, null);
+
+        // Handle projection if present
+        if (ctx.operation().size() > 1) // Second operation is the projection
+        {
+            ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
+            elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+            // Extract join information if the operation is a join
+            if (operation instanceof DynaFunc && "join".equals(((DynaFunc) operation).funcName))
+            {
+                DynaFunc joinFunc = (DynaFunc) operation;
+                if (joinFunc.parameters.size() == 4)
+                {
+                    if (joinFunc.parameters.get(0) instanceof IngestRelationColumn &&
+                        joinFunc.parameters.get(1) instanceof IngestRelationColumn &&
+                        joinFunc.parameters.get(2) instanceof Literal &&
+                        joinFunc.parameters.get(3) instanceof DynaFunc)
+                    {
+                        elementWithJoins.source1 = ((IngestRelationColumn) joinFunc.parameters.get(0)).ingestAccessor;
+                        elementWithJoins.source2 = ((IngestRelationColumn) joinFunc.parameters.get(1)).ingestAccessor;
+                        elementWithJoins.joinType = ((Literal) joinFunc.parameters.get(2)).value.toString();
+                        elementWithJoins.condition = (DynaFunc) joinFunc.parameters.get(3);
+                        // Set lambda parameter names
+                        LakehouseMappingParserGrammar.FunctionExpressionParametersContext paramsCtx = ctx.operation(0).functionExpression().functionExpressionParameters();
+                        if (paramsCtx != null && paramsCtx.functionOperationArgument().size() >= 3 && paramsCtx.functionOperationArgument(2).anyLambda() != null)
+                        {
+                            elementWithJoins.conditionParametersNames = ListIterate.collect(
+                                    paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
+                                    param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
+                            );
+                        }
+                    }
+                    else
+                    {
+                        throw new EngineException("Invalid join operation parameters", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                    }
+                }
+            }
+
+            // Set the projection as the relationalElement
+            elementWithJoins.relationalElement = visitOperation(ctx.operation(1), elementWithJoins.source2, null);
+            propertyMapping.relationalOperation = elementWithJoins;
+        }
+        else
+        {
+            propertyMapping.relationalOperation = operation;
+        }
+
+        return propertyMapping;
+    }
+
+    private RelationalOperationElement visitOperation(LakehouseMappingParserGrammar.OperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        if (ctx.booleanOperation() != null)
+        {
+            return visitBooleanOperation(ctx.booleanOperation(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.functionExpression() != null)
+        {
+            return visitFunctionExpression(ctx.functionExpression(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.expression() != null)
+        {
+            return visitExpression(ctx.expression(), ingestPtr, lambdaContext);
+        }
+        throw new EngineException("Unsupported operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitBooleanOperation(LakehouseMappingParserGrammar.BooleanOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        RelationalOperationElement operationElement = visitAtomicExpression(ctx.atomicExpression(), ingestPtr, lambdaContext);
+        if (ctx.booleanOperationRight() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = ctx.booleanOperationRight().booleanOperator().AND() != null ? "and" : "or";
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(operationElement);
+            RelationalOperationElement right = visitOperation(ctx.booleanOperationRight().operation(), ingestPtr, lambdaContext);
+            operation.parameters.add(right);
+            return operation;
+        }
+        return operationElement;
+    }
+
+    private RelationalOperationElement visitFunctionExpression(LakehouseMappingParserGrammar.FunctionExpressionContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        DynaFunc operation = new DynaFunc();
+        operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        operation.parameters = new ArrayList<>();
         
-        StringBuilder builder = new StringBuilder();
-        builder.append(PureGrammarComposerUtility.convertIdentifier(func.funcName));
-        builder.append("(");
-        builder.append(ListIterate.collect(func.parameters, param -> renderRelationalOperationElement(param)).makeString(", "));
-        builder.append(")");
-        return builder.toString();
-    }
-    else if (operation instanceof IngestRelationColumn)
-    {
-        IngestRelationColumn column = (IngestRelationColumn) operation;
-        StringBuilder builder = new StringBuilder();
-        if (column.ingestAccessor != null && !column.ingestAccessor.path.isEmpty())
+        // Determine if this is a simple function call or database pointer function call
+        if (ctx.databasePointer() != null)
         {
-            builder.append("[").append(column.ingestAccessor.path.get(0)).append("]").append(column.ingestAccessor.path.get(1));
-        }
-        if (column.column != null)
-        {
-            builder.append(".").append(column.column);
-        }
-        return builder.toString();
-    }
-    else if (operation instanceof Literal)
-    {
-        Literal literal = (Literal) operation;
-        if (literal.value instanceof String)
-        {
-            return PureGrammarComposerUtility.convertString((String) literal.value, true);
-        }
-        return literal.value.toString();
-    }
-    else if (operation instanceof ElementWithLakeJoins)
-    {
-        ElementWithLakeJoins join = (ElementWithLakeJoins) operation;
-        StringBuilder builder = new StringBuilder();
+            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.identifier(1)); // Function name (e.g., "join")
+            IngestRelationColumn sourceColumn = new IngestRelationColumn();
+            sourceColumn.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.databasePointer());
+            sourceColumn.ingestAccessor = new IngestRelationAccessor();
+            sourceColumn.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.databasePointer());
+            String sourceDb = visitDatabasePointer(ctx.databasePointer());
+            String sourceTable = PureGrammarParserUtility.fromIdentifier(ctx.identifier(0));
+            sourceColumn.ingestAccessor.path = Lists.mutable.with(sourceDb, sourceTable);
 
-        // Serialize source1
-        if (join.source1 != null && !join.source1.path.isEmpty())
-        {
-            builder.append("[").append(join.source1.path.get(0)).append("]").append(join.source1.path.get(1));
-        }
-        // Serialize join function
-        builder.append("->join(");
-        // Serialize source2
-        if (join.source2 != null && !join.source2.path.isEmpty())
-        {
-            builder.append("[").append(join.source2.path.get(0)).append("]").append(join.source2.path.get(1));
-        }
-        // Serialize joinType
-        if (join.joinType != null)
-        {
-            builder.append(", ").append(join.joinType);
-        }
-        // Serialize condition as lambda syntax
-        if (join.condition != null && join.conditionParametersNames != null && !join.conditionParametersNames.isEmpty())
-        {
-            builder.append(", {");
-            builder.append(String.join(", ", join.conditionParametersNames));
-            builder.append("|");
-            builder.append(renderLambdaBody(join.condition, join.conditionParametersNames, join.source1, join.source2));
-            builder.append("}");
-        }
-        builder.append(")");
-        // Serialize projection
-        if (join.relationalElement != null)
-        {
-            builder.append(" | ").append(renderRelationalOperationElement(join.relationalElement));
-        }
-        return builder.toString();
-    }
-    throw new IllegalStateException("Unsupported operation type: " + operation.getClass().getSimpleName());
-}
-
-// Helper method to check if a column is from a lambda parameter
-private static boolean isLambdaParameterColumn(RelationalOperationElement operation)
-{
-    if (!(operation instanceof IngestRelationColumn))
-    {
-        return false;
-    }
-    IngestRelationColumn column = (IngestRelationColumn) operation;
-    // Lambda parameter columns typically have both accessor path and column name
-    return column.ingestAccessor != null && column.column != null;
-}
-
-// Helper method to render lambda operands with proper parameter syntax
-private static String renderLambdaOperand(RelationalOperationElement operation)
-{
-    if (operation instanceof IngestRelationColumn)
-    {
-        IngestRelationColumn column = (IngestRelationColumn) operation;
-        // This will be called within a lambda context, need to determine which parameter
-        // This is a simplified version - you may need to pass context to determine x vs y
-        return "$x." + column.column; // You'll need to determine x vs y based on context
-    }
-    return renderRelationalOperationElement(operation);
-}
-
-// Updated renderLambdaBody to handle parameter names and sources
-private static String renderLambdaBody(DynaFunc condition, List<String> paramNames, 
-                                       IngestRelationAccessor source1, IngestRelationAccessor source2)
-{
-    if ("equal".equals(condition.funcName) && condition.parameters.size() == 2)
-    {
-        String left = renderLambdaOperandWithContext(condition.parameters.get(0), paramNames, source1, source2);
-        String right = renderLambdaOperandWithContext(condition.parameters.get(1), paramNames, source1, source2);
-        return left + " == " + right;
-    }
-    else if ("notEqual".equals(condition.funcName) && condition.parameters.size() == 2)
-    {
-        String left = renderLambdaOperandWithContext(condition.parameters.get(0), paramNames, source1, source2);
-        String right = renderLambdaOperandWithContext(condition.parameters.get(1), paramNames, source1, source2);
-        return left + " != " + right;
-    }
-    else if ("and".equals(condition.funcName) && condition.parameters.size() == 2)
-    {
-        String left = renderLambdaBody((DynaFunc) condition.parameters.get(0), paramNames, source1, source2);
-        String right = renderLambdaBody((DynaFunc) condition.parameters.get(1), paramNames, source1, source2);
-        return left + " && " + right;
-    }
-    else if ("or".equals(condition.funcName) && condition.parameters.size() == 2)
-    {
-        String left = renderLambdaBody((DynaFunc) condition.parameters.get(0), paramNames, source1, source2);
-        String right = renderLambdaBody((DynaFunc) condition.parameters.get(1), paramNames, source1, source2);
-        return left + " || " + right;
-    }
-
-    // Fallback to function syntax for complex conditions
-    return renderRelationalOperationElement(condition);
-}
-
-// New helper method to render lambda operands with proper context
-private static String renderLambdaOperandWithContext(RelationalOperationElement operation, 
-                                                     List<String> paramNames, 
-                                                     IngestRelationAccessor source1, 
-                                                     IngestRelationAccessor source2)
-{
-    if (operation instanceof IngestRelationColumn)
-    {
-        IngestRelationColumn column = (IngestRelationColumn) operation;
-        if (column.ingestAccessor != null && column.column != null)
-        {
-            // Determine which parameter this column belongs to
-            String paramName = null;
-            if (source1 != null && column.ingestAccessor.path.equals(source1.path))
+            LakehouseMappingParserGrammar.FunctionExpressionParametersContext paramsCtx = ctx.functionExpressionParameters();
+            
+            if ("join".equals(operation.funcName) && paramsCtx.functionOperationArgument().size() >= 3)
             {
-                paramName = paramNames.get(0); // First param (usually 'x')
+                // For join, create a lambda context for the condition lambda
+                RelationalOperationElement targetArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(0), ingestPtr, null);
+                if (!(targetArg instanceof IngestRelationColumn))
+                {
+                    throw new EngineException("Join target must be a table reference", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(0)), EngineErrorType.PARSER);
+                }
+                IngestRelationColumn targetColumn = (IngestRelationColumn) targetArg;
+                
+                // Create lambda context for the join condition
+                LambdaContext joinLambdaContext = null;
+                if (paramsCtx.functionOperationArgument(2).anyLambda() != null)
+                {
+                    joinLambdaContext = new LambdaContext();
+                    List<LakehouseMappingParserGrammar.LambdaParamContext> lambdaParams = paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam();
+                    if (lambdaParams.size() >= 2)
+                    {
+                        String param1 = PureGrammarParserUtility.fromIdentifier(lambdaParams.get(0).identifier());
+                        String param2 = PureGrammarParserUtility.fromIdentifier(lambdaParams.get(1).identifier());
+                        joinLambdaContext.addParameter(param1, sourceColumn.ingestAccessor);
+                        joinLambdaContext.addParameter(param2, targetColumn.ingestAccessor);
+                    }
+                }
+
+                operation.parameters.add(sourceColumn);
+                operation.parameters.add(targetColumn);
+                operation.parameters.add(visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr, null)); // JoinKind
+                operation.parameters.add(visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), ingestPtr, joinLambdaContext)); // Lambda with context
             }
-            else if (source2 != null && column.ingestAccessor.path.equals(source2.path))
+            else if (paramsCtx != null)
             {
-                paramName = paramNames.get(1); // Second param (usually 'y')
+                // For non-join functions with database pointer
+                operation.parameters.add(sourceColumn);
+                operation.parameters.addAll(ListIterate.collect(paramsCtx.functionOperationArgument(), 
+                    argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr, lambdaContext)));
+            }
+        }
+        else
+        {
+            // Simple function call: toUpper(...)
+            operation.funcName = PureGrammarParserUtility.fromIdentifier(ctx.identifier(0));
+            LakehouseMappingParserGrammar.FunctionExpressionParametersContext paramsCtx = ctx.functionExpressionParameters();
+            if (paramsCtx != null)
+            {
+                operation.parameters = ListIterate.collect(paramsCtx.functionOperationArgument(), 
+                    argCtx -> visitFunctionOperationArgument(argCtx, ingestPtr, lambdaContext));
+            }
+        }
+
+        return operation;
+    }
+
+    private RelationalOperationElement visitExpression(LakehouseMappingParserGrammar.ExpressionContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        RelationalOperationElement left = visitAtomicExpression(ctx.atomicExpression(), ingestPtr, lambdaContext);
+        if (ctx.equalNotEqual() != null)
+        {
+            DynaFunc operation = new DynaFunc();
+            operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            operation.funcName = ctx.equalNotEqual().TEST_EQUAL() != null ? "equal" : "notEqual";
+            operation.parameters = new ArrayList<>();
+            operation.parameters.add(left);
+            operation.parameters.add(visitAtomicExpression(ctx.equalNotEqual().atomicExpression(), ingestPtr, lambdaContext));
+            return operation;
+        }
+        return left;
+    }
+
+    private RelationalOperationElement visitAtomicExpression(LakehouseMappingParserGrammar.AtomicExpressionContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        if (ctx.columnOperation() != null)
+        {
+            return visitColumnOperation(ctx.columnOperation(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.constant() != null)
+        {
+            Literal constant = new Literal();
+            constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            if (ctx.constant().STRING() != null)
+            {
+                constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
+            }
+            else if (ctx.constant().INTEGER() != null)
+            {
+                constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
+            }
+            else if (ctx.constant().FLOAT() != null)
+            {
+                constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
+            }
+            else
+            {
+                throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            return constant;
+        }
+        else if (ctx.anyLambda() != null)
+        {
+            return visitAnyLambda(ctx.anyLambda(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.operation() != null)
+        {
+            return visitOperation(ctx.operation(), ingestPtr, lambdaContext);
+        }
+        throw new EngineException("Unsupported atomic expression syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitAnyLambda(LakehouseMappingParserGrammar.AnyLambdaContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        if (ctx.operation() != null)
+        {
+            // Use the provided lambda context if available, otherwise pass through the default ingestPtr
+            RelationalOperationElement operation = visitOperation(ctx.operation(), ingestPtr, lambdaContext);
+            if (operation instanceof DynaFunc)
+            {
+                return operation;
+            }
+            DynaFunc lambda = new DynaFunc();
+            lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            lambda.funcName = "lambda";
+            lambda.parameters = new ArrayList<>();
+            lambda.parameters.add(operation);
+            return lambda;
+        }
+        throw new EngineException("Invalid lambda syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitFunctionOperationArgument(LakehouseMappingParserGrammar.FunctionOperationArgumentContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        if (ctx.qualifiedName() != null && ctx.identifier() != null)
+        {
+            Literal literal = new Literal();
+            literal.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            literal.value = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()) + '.' + PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+            return literal;
+        }
+        else if (ctx.databasePointer() != null && ctx.identifier() != null)
+        {
+            IngestRelationColumn tableRef = new IngestRelationColumn();
+            tableRef.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            tableRef.ingestAccessor = new IngestRelationAccessor();
+            tableRef.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            String databasePath = visitDatabasePointer(ctx.databasePointer());
+            String tableName = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+            tableRef.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
+            tableRef.column = null; // Table-level reference, no column
+            return tableRef;
+        }
+        else if (ctx.anyLambda() != null)
+        {
+            return visitAnyLambda(ctx.anyLambda(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.operation() != null)
+        {
+            return visitOperation(ctx.operation(), ingestPtr, lambdaContext);
+        }
+        throw new EngineException("Unsupported function argument syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private RelationalOperationElement visitColumnOperation(LakehouseMappingParserGrammar.ColumnOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+    {
+        if (ctx.tableAliasColumnOperation() != null)
+        {
+            return visitTableAliasColumnOperation(ctx.tableAliasColumnOperation(), ingestPtr, lambdaContext);
+        }
+        else if (ctx.variable() != null && ctx.relationalIdentifier() != null)
+        {
+            String paramName = PureGrammarParserUtility.fromIdentifier(ctx.variable().identifier());
+            
+            // Check if we have a lambda context with this parameter
+            IngestRelationAccessor accessor = null;
+            if (lambdaContext != null)
+            {
+                accessor = lambdaContext.getAccessor(paramName);
             }
             
-            if (paramName != null)
+            if (accessor == null)
             {
-                return "$" + paramName + "." + column.column;
+                // Fall back to default ingestPtr if no lambda context or parameter not found
+                accessor = ingestPtr;
             }
+            
+            if (accessor == null)
+            {
+                throw new EngineException("No IngestRelationAccessor provided for lambda parameter: $" + paramName, this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            
+            IngestRelationColumn column = new IngestRelationColumn();
+            column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            column.ingestAccessor = new IngestRelationAccessor();
+            column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            column.ingestAccessor.path = Lists.mutable.withAll(accessor.path);
+            column.column = ctx.relationalIdentifier().QUOTED_STRING() != null
+                    ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
+                    : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
+            return column;
         }
-        // Fallback to full path if not a lambda parameter
-        return renderRelationalOperationElement(operation);
+        throw new EngineException("Unsupported column operation syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
-    else if (operation instanceof Literal)
+
+    private RelationalOperationElement visitTableAliasColumnOperation(LakehouseMappingParserGrammar.TableAliasColumnOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
     {
-        return renderRelationalOperationElement(operation);
+        return visitTableAliasColumnOperationWithScopeInfo(ctx.tableAliasColumnOperationWithScopeInfo(), ingestPtr, lambdaContext);
     }
-    else if (operation instanceof DynaFunc)
+
+    private RelationalOperationElement visitTableAliasColumnOperationWithScopeInfo(LakehouseMappingParserGrammar.TableAliasColumnOperationWithScopeInfoContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
     {
-        // Handle nested functions within lambda
-        return renderLambdaBody((DynaFunc) operation, paramNames, source1, source2);
+        IngestRelationColumn column = new IngestRelationColumn();
+        column.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        column.ingestAccessor = new IngestRelationAccessor();
+        column.ingestAccessor.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        String databasePath = ingestPtr != null ? ingestPtr.path.get(0) : null;
+        String tableName = ctx.relationalIdentifier().QUOTED_STRING() != null
+                ? PureGrammarParserUtility.fromGrammarString(ctx.relationalIdentifier().QUOTED_STRING().getText(), true)
+                : PureGrammarParserUtility.fromIdentifier(ctx.relationalIdentifier().unquotedIdentifier());
+        column.ingestAccessor.path = Lists.mutable.with(databasePath, tableName);
+        if (ctx.scopeInfo() != null && ctx.scopeInfo().relationalIdentifier().size() > 0)
+        {
+            column.column = ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING() != null
+                    ? PureGrammarParserUtility.fromGrammarString(ctx.scopeInfo().relationalIdentifier(0).QUOTED_STRING().getText(), true)
+                    : PureGrammarParserUtility.fromIdentifier(ctx.scopeInfo().relationalIdentifier(0).unquotedIdentifier());
+        }
+        else
+        {
+            throw new EngineException("Column name is required in scopeInfo", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        return column;
     }
-    return renderRelationalOperationElement(operation);
 }
