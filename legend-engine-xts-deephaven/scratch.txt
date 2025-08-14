@@ -1,67 +1,3 @@
-    @Test
-    public void testLakehouseMappingJoin()
-    {
-        test("###Lakehouse\n" +
-                "Ingest test::ingest::FirmIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Firm(\n" +
-                "      id: Varchar(200)[1],\n" +
-                        "      idF: Varchar(200)[1],\n" +
-                "      legalName: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10;\n" +
-                "]\n" +
-                "\n" +
-                "\n" +
-                "Ingest test::ingest::PersonIngest BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Person(\n" +
-                "      last_name: Varchar(200)[1],\n" +
-                        "      idP: Varchar(200)[1],\n" +
-                "      firm_id: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10\n" +
-                "   pk=[firm_id];\n" +
-                "]\n" +
-                "\n" +
-//                "###Pure\n" +
-//                "function test::myFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
-//                "{\n" +
-//                "  test::model::Person.all()->project(~[firmID:x|$x.firm_id, Name:x|$x.lastName])->from(test::mapping::MyMap1, my::DuckDBRuntime)\n" +
-//                "}\n" +
-                "\n" +
-                "\n" +
-                "###Pure\n" +
-                "Class test::model::Firm\n" +
-                "{\n" +
-                        "  IDF: String[1];\n" +
-                "  id: String[1];\n" +
-                "  legalName: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::model::Person\n" +
-                "{\n" +
-                        "  IDP: String[1];\n" +
-                "  lastName: String[1];\n" +
-                "  firm_id: Firm[1];\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping::MyMap1\n" +
-                "(\n" +
-                "  test::model::Person: Lakehouse\n" +
-                "  {\n" +
-                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
-                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name),\n" +
-                "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|$x.firm_id == $y.firm_id && $x.idP == $y.idF}) | [test::ingest::FirmIngest]Firm.id\n" +
-                "  }\n" +
-                ")\n"
-        );
-    }
-
-
-
 parser grammar LakehouseMappingParserGrammar;
 import CoreParserGrammar;
 
@@ -97,9 +33,32 @@ mappingScopeInfo:                           unquotedIdentifier
 ;
 
 // -------------------------------------- OPERATION --------------------------------------
-operation: functionExpression
-         | booleanOperation
-         | expression
+operation: booleanOperation
+;
+
+// Boolean operations (AND, OR) have lowest precedence
+booleanOperation: comparisonOperation (booleanOperator comparisonOperation)*
+;
+
+booleanOperator: AND | OR
+;
+
+// Comparison operations (==, !=, <, >, <=, >=) have higher precedence than boolean
+comparisonOperation: additiveOperation (comparisonOperator additiveOperation)?
+;
+
+comparisonOperator: TEST_EQUAL | TEST_NOT_EQUAL | LESS_THAN | GREATER_THAN | LESS_OR_EQUAL | GREATER_OR_EQUAL
+;
+
+// For now, we'll keep additive operations simple (can be extended later for +, -, etc.)
+additiveOperation: atomicExpression
+;
+
+atomicExpression: functionExpression
+                | columnOperation
+                | constant
+                | anyLambda
+                | PAREN_OPEN operation PAREN_CLOSE
 ;
 
 functionExpression: (databasePointer identifier ARROW)? identifier functionExpressionParameters
@@ -109,9 +68,9 @@ functionExpressionParameters: PAREN_OPEN (functionOperationArgument (COMMA funct
 ;
 
 functionOperationArgument: qualifiedName DOT identifier
-                            | databasePointer identifier
-                            | anyLambda
-                            |  operation
+                         | databasePointer identifier
+                         | anyLambda
+                         | operation
 ;
 
 anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_CLOSE
@@ -120,31 +79,14 @@ anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_C
 lambdaParam: identifier
 ;
 
-booleanOperation:                           atomicExpression booleanOperationRight?
-;
-booleanOperationRight:                      booleanOperator operation
-;
-booleanOperator:                            AND | OR
-;
-expression: atomicExpression (equalNotEqual)?
+columnOperation: databasePointer? tableAliasColumnOperation 
+               | variable DOT relationalIdentifier
 ;
 
-equalNotEqual: (TEST_EQUAL | TEST_NOT_EQUAL) atomicExpression
+tableAliasColumnOperation: tableAliasColumnOperationWithScopeInfo
 ;
 
-atomicExpression: columnOperation
-                | constant
-                | anyLambda
-                | PAREN_OPEN operation PAREN_CLOSE
-;
-
-columnOperation: databasePointer? tableAliasColumnOperation | variable DOT relationalIdentifier
-;
-
-tableAliasColumnOperation:   tableAliasColumnOperationWithScopeInfo
-;
-
-tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
+tableAliasColumnOperationWithScopeInfo: relationalIdentifier (DOT scopeInfo)?
 ;
 
 variable: DOLLAR identifier
@@ -155,28 +97,151 @@ constant: STRING | INTEGER | FLOAT
 
 // -------------------------------------- BUILDING BLOCK --------------------------------------
 
-scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+scopeInfo: relationalIdentifier (DOT relationalIdentifier)?
 ;
-databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+databasePointer: BRACKET_OPEN qualifiedName BRACKET_CLOSE
 ;
-relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+relationalIdentifier: unquotedIdentifier | QUOTED_STRING
 ;
 
 
 
 
-org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: no viable alternative at input '{x,y|$x.firm_id==$y.firm_id&'
+// Replace the visitOperation method with this:
+private RelationalOperationElement visitOperation(LakehouseMappingParserGrammar.OperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+{
+    // Since operation now directly contains booleanOperation
+    return visitBooleanOperation(ctx.booleanOperation(), ingestPtr, lambdaContext);
+}
 
-	at org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener.syntaxError(ParserErrorListener.java:105)
-	at org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)
-	at org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)
-	at org.antlr.v4.runtime.DefaultErrorStrategy.reportNoViableAlternative(DefaultErrorStrategy.java:310)
-	at org.antlr.v4.runtime.DefaultErrorStrategy.reportError(DefaultErrorStrategy.java:136)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionOperationArgument(LakehouseMappingParserGrammar.java:922)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionExpressionParameters(LakehouseMappingParserGrammar.java:816)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.functionExpression(LakehouseMappingParserGrammar.java:745)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.operation(LakehouseMappingParserGrammar.java:658)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.propertyMapping(LakehouseMappingParserGrammar.java:548)
-	at com.gs.alloy.lakehouse.runtime.grammar.antlr4.LakehouseMappingParserGrammar.lakehouseClassMapping(LakehouseMappingParserGrammar.java:365)
-	at com.gs.alloy.lakehouse.runtime.model.grammar.parser.LakehouseRuntimeParserExtension.getMappingSectionParserInfo(LakehouseRuntimeParserExtension.java:86)
-	at com.gs.alloy.lakehouse.runtime.model.grammar.parser.LakehouseRuntimeParserExtension.lambda$getExtraMappingElementParsers$0(LakehouseRuntimeParserExtension.java:103)
+// Update visitBooleanOperation to handle the new grammar structure:
+private RelationalOperationElement visitBooleanOperation(LakehouseMappingParserGrammar.BooleanOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+{
+    List<LakehouseMappingParserGrammar.ComparisonOperationContext> comparisons = ctx.comparisonOperation();
+    List<LakehouseMappingParserGrammar.BooleanOperatorContext> operators = ctx.booleanOperator();
+    
+    if (comparisons.size() == 1)
+    {
+        // No boolean operators, just a single comparison
+        return visitComparisonOperation(comparisons.get(0), ingestPtr, lambdaContext);
+    }
+    
+    // Build left-associative tree of boolean operations
+    RelationalOperationElement left = visitComparisonOperation(comparisons.get(0), ingestPtr, lambdaContext);
+    
+    for (int i = 0; i < operators.size(); i++)
+    {
+        DynaFunc operation = new DynaFunc();
+        operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(operators.get(i));
+        operation.funcName = operators.get(i).AND() != null ? "and" : "or";
+        operation.parameters = new ArrayList<>();
+        operation.parameters.add(left);
+        operation.parameters.add(visitComparisonOperation(comparisons.get(i + 1), ingestPtr, lambdaContext));
+        left = operation;
+    }
+    
+    return left;
+}
+
+// Add new method for comparison operations:
+private RelationalOperationElement visitComparisonOperation(LakehouseMappingParserGrammar.ComparisonOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+{
+    List<LakehouseMappingParserGrammar.AdditiveOperationContext> additives = ctx.additiveOperation();
+    
+    if (additives.size() == 1)
+    {
+        // No comparison operator
+        return visitAdditiveOperation(additives.get(0), ingestPtr, lambdaContext);
+    }
+    
+    // Has comparison operator
+    DynaFunc operation = new DynaFunc();
+    operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+    
+    LakehouseMappingParserGrammar.ComparisonOperatorContext opCtx = ctx.comparisonOperator(0);
+    if (opCtx.TEST_EQUAL() != null)
+    {
+        operation.funcName = "equal";
+    }
+    else if (opCtx.TEST_NOT_EQUAL() != null)
+    {
+        operation.funcName = "notEqual";
+    }
+    else if (opCtx.LESS_THAN() != null)
+    {
+        operation.funcName = "lessThan";
+    }
+    else if (opCtx.GREATER_THAN() != null)
+    {
+        operation.funcName = "greaterThan";
+    }
+    else if (opCtx.LESS_OR_EQUAL() != null)
+    {
+        operation.funcName = "lessThanEqual";
+    }
+    else if (opCtx.GREATER_OR_EQUAL() != null)
+    {
+        operation.funcName = "greaterThanEqual";
+    }
+    
+    operation.parameters = new ArrayList<>();
+    operation.parameters.add(visitAdditiveOperation(additives.get(0), ingestPtr, lambdaContext));
+    operation.parameters.add(visitAdditiveOperation(additives.get(1), ingestPtr, lambdaContext));
+    
+    return operation;
+}
+
+// Add new method for additive operations (currently just passes through to atomic):
+private RelationalOperationElement visitAdditiveOperation(LakehouseMappingParserGrammar.AdditiveOperationContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+{
+    // For now, additive operations just pass through to atomic expressions
+    // This can be extended later to handle +, -, *, / etc.
+    return visitAtomicExpression(ctx.atomicExpression(), ingestPtr, lambdaContext);
+}
+
+// Update visitAtomicExpression to handle the new structure:
+private RelationalOperationElement visitAtomicExpression(LakehouseMappingParserGrammar.AtomicExpressionContext ctx, IngestRelationAccessor ingestPtr, LambdaContext lambdaContext)
+{
+    if (ctx.functionExpression() != null)
+    {
+        return visitFunctionExpression(ctx.functionExpression(), ingestPtr, lambdaContext);
+    }
+    else if (ctx.columnOperation() != null)
+    {
+        return visitColumnOperation(ctx.columnOperation(), ingestPtr, lambdaContext);
+    }
+    else if (ctx.constant() != null)
+    {
+        Literal constant = new Literal();
+        constant.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.constant().STRING() != null)
+        {
+            constant.value = PureGrammarParserUtility.fromGrammarString(ctx.constant().STRING().getText(), true);
+        }
+        else if (ctx.constant().INTEGER() != null)
+        {
+            constant.value = Integer.parseInt(ctx.constant().INTEGER().getText());
+        }
+        else if (ctx.constant().FLOAT() != null)
+        {
+            constant.value = Double.parseDouble(ctx.constant().FLOAT().getText());
+        }
+        else
+        {
+            throw new EngineException("Unsupported constant syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        return constant;
+    }
+    else if (ctx.anyLambda() != null)
+    {
+        return visitAnyLambda(ctx.anyLambda(), ingestPtr, lambdaContext);
+    }
+    else if (ctx.operation() != null)
+    {
+        // Parenthesized expression
+        return visitOperation(ctx.operation(), ingestPtr, lambdaContext);
+    }
+    throw new EngineException("Unsupported atomic expression syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+}
+
+// Remove the old visitExpression method as it's no longer needed
