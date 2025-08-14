@@ -103,10 +103,15 @@ public class LakehouseClassMappingParseTreeWalker
                             elementWithJoins.source2 = ((IngestRelationColumn) joinFunc.parameters.get(1)).ingestAccessor;
                             elementWithJoins.joinType = ((Literal) joinFunc.parameters.get(2)).value.toString();
                             elementWithJoins.condition = (DynaFunc) joinFunc.parameters.get(3);
-                            elementWithJoins.conditionParametersNames = ListIterate.collect(
-                                ((LakehouseMappingParserGrammar.AnyLambdaContext) ctx.operation(0).functionExpression().functionExpressionParameters().functionOperationArgument(2)).lambdaParam(),
-                                param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
-                            );
+                            // Set lambda parameter names
+                            LakehouseMappingParserGrammar.FunctionExpressionParametersContext paramsCtx = ctx.operation(0).functionExpression().functionExpressionParameters();
+                            if (paramsCtx != null && paramsCtx.functionOperationArgument().size() >= 3 && paramsCtx.functionOperationArgument(2).anyLambda() != null)
+                            {
+                                elementWithJoins.conditionParametersNames = ListIterate.collect(
+                                    paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
+                                    param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
+                                );
+                            }
                         }
                         else
                         {
@@ -125,6 +130,18 @@ public class LakehouseClassMappingParseTreeWalker
             {
                 ElementWithLakeJoins elementWithJoins = (ElementWithLakeJoins) operation;
                 elementWithJoins.relationalElement = visitOperation(ctx.operation(1), lakehouseClassMapping.ingestPtr);
+                // Set lambda parameter names if not already set
+                if (elementWithJoins.conditionParametersNames == null)
+                {
+                    LakehouseMappingParserGrammar.FunctionExpressionParametersContext paramsCtx = ctx.operation(0).functionExpression().functionExpressionParameters();
+                    if (paramsCtx != null && paramsCtx.functionOperationArgument().size() >= 3 && paramsCtx.functionOperationArgument(2).anyLambda() != null)
+                    {
+                        elementWithJoins.conditionParametersNames = ListIterate.collect(
+                            paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
+                            param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
+                        );
+                    }
+                }
                 propertyMapping.relationalOperation = elementWithJoins;
             }
         }
@@ -223,10 +240,14 @@ public class LakehouseClassMappingParseTreeWalker
                         throw new EngineException("Join condition must be a lambda", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(2)), EngineErrorType.PARSER);
                     }
                     elementWithJoins.condition = (DynaFunc) conditionArg;
-                    elementWithJoins.conditionParametersNames = ListIterate.collect(
-                        paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
-                        param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
-                    );
+                    // Set lambda parameter names
+                    if (paramsCtx.functionOperationArgument(2).anyLambda() != null)
+                    {
+                        elementWithJoins.conditionParametersNames = ListIterate.collect(
+                            paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
+                            param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
+                        );
+                    }
                     return elementWithJoins;
                 }
 
