@@ -1,132 +1,79 @@
 parser grammar LakehouseMappingParserGrammar;
 import CoreParserGrammar;
-
 options
 {
     tokenVocab = LakehouseMappingLexerGrammar;
 }
-
 // -------------------------------------- IDENTIFIER --------------------------------------
-
-unquotedIdentifier:                         VALID_STRING
+unquotedIdentifier: VALID_STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
                                             | TO_BYTES_FUNCTION
                                             | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
 ;
-
-identifier:                                 unquotedIdentifier | STRING
+identifier: unquotedIdentifier | STRING
 ;
-
 // -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
-
-lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
+lakehouseClassMapping: (ingestSrc | accessPointSrc)
                                                 (propertyMapping (COMMA propertyMapping)*)?
                                             EOF
 ;
-ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
+ingestSrc: INGEST_SOURCE_CMD databasePointer qualifiedName
 ;
-accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
+accessPointSrc: ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
 ;
-propertyMapping:                            qualifiedName STAR? COLON operation (PIPE operation)?
+propertyMapping: qualifiedName STAR? COLON operation (PIPE operation)*
 ;
-mappingScopeInfo:                           unquotedIdentifier
+mappingScopeInfo: unquotedIdentifier
 ;
-
 // -------------------------------------- OPERATION --------------------------------------
-operation: booleanOperation
-         | functionExpression
+operation: functionExpression
+         | booleanOperation
          | expression
 ;
 
-functionExpression: databasePointer identifier ARROW identifier functionExpressionParameters
+// Updated to handle both simple function calls and database pointer function calls
+functionExpression: (databasePointer identifier ARROW)? identifier functionExpressionParameters
 ;
-
 functionExpressionParameters: PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
 ;
-
-functionOperationArgument: qualifiedName DOT identifier | databasePointer identifier | anyLambda |  operation
+functionOperationArgument: qualifiedName DOT identifier 
+                         | databasePointer (qualifiedName | identifier) 
+                         | anyLambda 
+                         | operation
 ;
-
 anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_CLOSE
 ;
-
 lambdaParam: identifier
 ;
-
-booleanOperation:                           atomicExpression booleanOperationRight?
+booleanOperation: atomicExpression booleanOperationRight*
 ;
-booleanOperationRight:                      booleanOperator operation
+booleanOperationRight: booleanOperator operation
 ;
-booleanOperator:                            AND | OR
+booleanOperator: AND | OR
 ;
-expression: atomicExpression (equalNotEqual)?
+expression: atomicExpression (equalNotEqual)*
 ;
-
 equalNotEqual: (TEST_EQUAL | TEST_NOT_EQUAL) atomicExpression
 ;
-
 atomicExpression: columnOperation
                 | constant
                 | anyLambda
                 | PAREN_OPEN operation PAREN_CLOSE
 ;
-
 columnOperation: databasePointer? tableAliasColumnOperation | variable DOT relationalIdentifier
 ;
-
-tableAliasColumnOperation:   tableAliasColumnOperationWithScopeInfo
+tableAliasColumnOperation: tableAliasColumnOperationWithScopeInfo
 ;
-
-tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
+tableAliasColumnOperationWithScopeInfo: relationalIdentifier (DOT scopeInfo)?
 ;
-
 variable: DOLLAR identifier
 ;
-
 constant: STRING | INTEGER | FLOAT
 ;
-
 // -------------------------------------- BUILDING BLOCK --------------------------------------
-
-scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
+scopeInfo: relationalIdentifier (DOT relationalIdentifier)?
 ;
-databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
+databasePointer: BRACKET_OPEN qualifiedName BRACKET_CLOSE
 ;
-relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
+relationalIdentifier: unquotedIdentifier | QUOTED_STRING
 ;
-
-
-
-
-    @Test
-    public void testLakehouseMappingIde()
-    {
-        test("###Lakehouse\n" +
-                "Ingest test::ingest::PersonIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Person(\n" +
-                "      last_name: Varchar(200)[1],\n" +
-                "      firm_id: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10;\n" +
-                "]\n" +
-                "\n" +
-                "\n" +
-                "\n" +
-                "###Pure\n" +
-                "Class test::model::Person\n" +
-                "{\n" +
-                "  lastName: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping::MyMap\n" +
-                "(\n" +
-                "  test::model::Person: Lakehouse\n" +
-                "  {\n" +
-                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
-                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name)\n" +
-                "  }\n" +
-                ")\n");
-    }
