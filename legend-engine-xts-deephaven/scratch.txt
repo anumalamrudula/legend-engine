@@ -1,166 +1,3 @@
-    @Test
-    public void testLakehouseMappingJoin()
-    {
-        test("###Lakehouse\n" +
-                "Ingest test::ingest::FirmIngest AppendOnly Undefined<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Firm(\n" +
-                "      id: Varchar(200)[1],\n" +
-                "      legalName: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10;\n" +
-                "]\n" +
-                "\n" +
-                "\n" +
-                "Ingest test::ingest::PersonIngest BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=test\n" +
-                "[\n" +
-                "   Person(\n" +
-                "      last_name: Varchar(200)[1],\n" +
-                "      firm_id: Varchar(200)[1]\n" +
-                "   )\n" +
-                "   DP10\n" +
-                "   pk=[firm_id];\n" +
-                "]\n" +
-                "\n" +
-//                "###Pure\n" +
-//                "function test::myFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
-//                "{\n" +
-//                "  test::model::Person.all()->project(~[firmID:x|$x.firm_id, Name:x|$x.lastName])->from(test::mapping::MyMap1, my::DuckDBRuntime)\n" +
-//                "}\n" +
-                "\n" +
-                "\n" +
-                "###Pure\n" +
-                "Class test::model::Firm\n" +
-                "{\n" +
-                "  id: String[1];\n" +
-                "  legalName: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::model::Person\n" +
-                "{\n" +
-                "  lastName: String[1];\n" +
-                "  firm_id: Firm[1];\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::mapping::MyMap1\n" +
-                "(\n" +
-                "  test::model::Person: Lakehouse\n" +
-                "  {\n" +
-                "    ~ingestSource [test::ingest::PersonIngest]Person\n" +
-                "    lastName: toUpper([test::ingest::PersonIngest]Person.last_name),\n" +
-                "    firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id\n" +
-                "  }\n" +
-                ")\n"
-        );
-    }
-
-
-
-parser grammar LakehouseMappingParserGrammar;
-import CoreParserGrammar;
-
-options
-{
-    tokenVocab = LakehouseMappingLexerGrammar;
-}
-
-// -------------------------------------- IDENTIFIER --------------------------------------
-
-unquotedIdentifier:                         VALID_STRING
-                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                            | TO_BYTES_FUNCTION
-                                            | INGEST_SOURCE_CMD | ACCESS_POINT_SOURCE_CMD
-;
-
-identifier:                                 unquotedIdentifier | STRING
-;
-
-// -------------------------------------- LAKEHOUSE MAPPING DEFINITION --------------------------------------
-
-lakehouseClassMapping:                      (ingestSrc | accessPointSrc)
-                                                (propertyMapping (COMMA propertyMapping)*)?
-                                            EOF
-;
-ingestSrc:                                  INGEST_SOURCE_CMD databasePointer qualifiedName
-;
-accessPointSrc:                             ACCESS_POINT_SOURCE_CMD databasePointer qualifiedName
-;
-propertyMapping:                            qualifiedName STAR? COLON operation (PIPE operation)?
-;
-mappingScopeInfo:                           unquotedIdentifier
-;
-
-// -------------------------------------- OPERATION --------------------------------------
-operation: functionExpression
-         | booleanOperation
-         | expression
-;
-
-functionExpression: (databasePointer identifier ARROW)? identifier functionExpressionParameters
-;
-
-functionExpressionParameters: PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
-;
-
-functionOperationArgument: qualifiedName DOT identifier
-                            | databasePointer identifier
-                            | anyLambda
-                            |  operation
-;
-
-anyLambda: BRACE_OPEN (lambdaParam (COMMA lambdaParam)*)? PIPE operation BRACE_CLOSE
-;
-
-lambdaParam: identifier
-;
-
-booleanOperation:                           atomicExpression booleanOperationRight?
-;
-booleanOperationRight:                      booleanOperator operation
-;
-booleanOperator:                            AND | OR
-;
-expression: atomicExpression (equalNotEqual)?
-;
-
-equalNotEqual: (TEST_EQUAL | TEST_NOT_EQUAL) atomicExpression
-;
-
-atomicExpression: columnOperation
-                | constant
-                | anyLambda
-                | PAREN_OPEN operation PAREN_CLOSE
-;
-
-columnOperation: databasePointer? tableAliasColumnOperation | variable DOT relationalIdentifier
-;
-
-tableAliasColumnOperation:   tableAliasColumnOperationWithScopeInfo
-;
-
-tableAliasColumnOperationWithScopeInfo:     relationalIdentifier (DOT scopeInfo)?
-;
-
-variable: DOLLAR identifier
-;
-
-constant: STRING | INTEGER | FLOAT
-;
-
-// -------------------------------------- BUILDING BLOCK --------------------------------------
-
-scopeInfo:                                  relationalIdentifier (DOT relationalIdentifier)?
-;
-databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
-;
-relationalIdentifier:                       unquotedIdentifier | QUOTED_STRING
-;
-
-
-
-
 package com.gs.alloy.lakehouse.runtime.model.grammar.parser;
 
 import com.gs.alloy.lakehouse.ingest.api.accessor.protocol.IngestRelationAccessor;
@@ -362,40 +199,40 @@ public class LakehouseClassMappingParseTreeWalker
                 lambdaAccessors.add(targetColumn.ingestAccessor); // y
 
                 // Update ElementWithLakeJoins if this is part of a join
-                if (ctx.getParent() instanceof LakehouseMappingParserGrammar.PropertyMappingContext)
-                {
-                    LakehouseMappingParserGrammar.PropertyMappingContext parentCtx = (LakehouseMappingParserGrammar.PropertyMappingContext) ctx.getParent();
-                    ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
-                    elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-                    elementWithJoins.source1 = sourceColumn.ingestAccessor;
-                    elementWithJoins.source2 = targetColumn.ingestAccessor;
-                    RelationalOperationElement joinTypeArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr);
-                    if (!(joinTypeArg instanceof Literal))
-                    {
-                        throw new EngineException("Join type must be a literal (e.g., meta::pure::functions::relation::JoinKind.INNER)", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(1)), EngineErrorType.PARSER);
-                    }
-                    elementWithJoins.joinType = ((Literal) joinTypeArg).value.toString();
-                    RelationalOperationElement conditionArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), lambdaAccessors);
-                    if (!(conditionArg instanceof DynaFunc))
-                    {
-                        throw new EngineException("Join condition must be a lambda", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(2)), EngineErrorType.PARSER);
-                    }
-                    elementWithJoins.condition = (DynaFunc) conditionArg;
-                    // Set lambda parameter names
-                    if (paramsCtx.functionOperationArgument(2).anyLambda() != null)
-                    {
-                        elementWithJoins.conditionParametersNames = ListIterate.collect(
-                                paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
-                                param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
-                        );
-                    }
-                    if (parentCtx.operation().size() > 1)
-                    {
-                        elementWithJoins.relationalElement = visitOperation(parentCtx.operation(1), ingestPtr);
-//                        elementWithJoins.relationalElement = visitOperation(parentCtx.operation(1), lambdaAccessors);
-                    }
-                    return elementWithJoins;
-                }
+//                if (ctx.getParent() instanceof LakehouseMappingParserGrammar.PropertyMappingContext)
+//                {
+//                    LakehouseMappingParserGrammar.PropertyMappingContext parentCtx = (LakehouseMappingParserGrammar.PropertyMappingContext) ctx.getParent();
+//                    ElementWithLakeJoins elementWithJoins = new ElementWithLakeJoins();
+//                    elementWithJoins.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//                    elementWithJoins.source1 = sourceColumn.ingestAccessor;
+//                    elementWithJoins.source2 = targetColumn.ingestAccessor;
+//                    RelationalOperationElement joinTypeArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(1), ingestPtr);
+//                    if (!(joinTypeArg instanceof Literal))
+//                    {
+//                        throw new EngineException("Join type must be a literal (e.g., meta::pure::functions::relation::JoinKind.INNER)", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(1)), EngineErrorType.PARSER);
+//                    }
+//                    elementWithJoins.joinType = ((Literal) joinTypeArg).value.toString();
+//                    RelationalOperationElement conditionArg = visitFunctionOperationArgument(paramsCtx.functionOperationArgument(2), lambdaAccessors);
+//                    if (!(conditionArg instanceof DynaFunc))
+//                    {
+//                        throw new EngineException("Join condition must be a lambda", this.walkerSourceInformation.getSourceInformation(paramsCtx.functionOperationArgument(2)), EngineErrorType.PARSER);
+//                    }
+//                    elementWithJoins.condition = (DynaFunc) conditionArg;
+//                    // Set lambda parameter names
+//                    if (paramsCtx.functionOperationArgument(2).anyLambda() != null)
+//                    {
+//                        elementWithJoins.conditionParametersNames = ListIterate.collect(
+//                                paramsCtx.functionOperationArgument(2).anyLambda().lambdaParam(),
+//                                param -> PureGrammarParserUtility.fromIdentifier(param.identifier())
+//                        );
+//                    }
+//                    if (parentCtx.operation().size() > 1)
+//                    {
+//                        elementWithJoins.relationalElement = visitOperation(parentCtx.operation(1), ingestPtr);
+////                        elementWithJoins.relationalElement = visitOperation(parentCtx.operation(1), lambdaAccessors);
+//                    }
+//                    return elementWithJoins;
+//                }
 
                 operation.parameters.add(sourceColumn);
                 operation.parameters.add(targetColumn);
@@ -517,20 +354,40 @@ public class LakehouseClassMappingParseTreeWalker
         throw new EngineException("Unsupported atomic expression syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
+//    private RelationalOperationElement visitAnyLambda(LakehouseMappingParserGrammar.AnyLambdaContext ctx, Object ingestPtr)
+//    {
+//        DynaFunc lambda = new DynaFunc();
+//        lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+//        lambda.funcName = "lambda";
+//        lambda.parameters = new ArrayList<>();
+//        // lambda.parametersNames = ListIterate.collect(ctx.lambdaParam(), param -> PureGrammarParserUtility.fromIdentifier(param.identifier()));
+//        if (ctx.operation() != null)
+//        {
+////            lambda.parameters.add(visitOperation(ctx.operation(), ingestPtr));
+//            IngestRelationAccessor accessor = ingestPtr instanceof IngestRelationAccessor ? (IngestRelationAccessor) ingestPtr : (ingestPtr instanceof List ? ((List<IngestRelationAccessor>) ingestPtr).get(0) : null);
+//            lambda.parameters.add(visitOperation(ctx.operation(), accessor));
+//        }
+//        return lambda;
+//    }
+
     private RelationalOperationElement visitAnyLambda(LakehouseMappingParserGrammar.AnyLambdaContext ctx, Object ingestPtr)
     {
-        DynaFunc lambda = new DynaFunc();
-        lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        lambda.funcName = "lambda";
-        lambda.parameters = new ArrayList<>();
-        // lambda.parametersNames = ListIterate.collect(ctx.lambdaParam(), param -> PureGrammarParserUtility.fromIdentifier(param.identifier()));
         if (ctx.operation() != null)
         {
-//            lambda.parameters.add(visitOperation(ctx.operation(), ingestPtr));
             IngestRelationAccessor accessor = ingestPtr instanceof IngestRelationAccessor ? (IngestRelationAccessor) ingestPtr : (ingestPtr instanceof List ? ((List<IngestRelationAccessor>) ingestPtr).get(0) : null);
-            lambda.parameters.add(visitOperation(ctx.operation(), accessor));
+            RelationalOperationElement operation = visitOperation(ctx.operation(), accessor);
+            if (operation instanceof DynaFunc)
+            {
+                return operation;
+            }
+            DynaFunc lambda = new DynaFunc();
+            lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            lambda.funcName = "lambda";
+            lambda.parameters = new ArrayList<>();
+            lambda.parameters.add(operation);
+            return lambda;
         }
-        return lambda;
+        throw new EngineException("Invalid lambda syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private RelationalOperationElement visitFunctionOperationArgument(LakehouseMappingParserGrammar.FunctionOperationArgumentContext ctx, Object ingestPtr)
@@ -916,5 +773,6 @@ private static String renderLambdaBody(DynaFunc condition)
 }
 }
 
-expected -   firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id
-actual  -  firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|lambda(equal([test::ingest::PersonIngest]Person.firm_id, [test::ingest::PersonIngest]Person.firm_id))}) | [test::ingest::FirmIngest]Firm.id
+
+expectd - firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|$x.firm_id ==  $y.firm_id}) | [test::ingest::FirmIngest]Firm.id 
+actual - firm_id: [test::ingest::PersonIngest]Person->join([test::ingest::FirmIngest]Firm, meta::pure::functions::relation::JoinKind.INNER, {x, y|[test::ingest::PersonIngest]Person.firm_id == [test::ingest::PersonIngest]Person.firm_id}) | [test::ingest::FirmIngest]Firm.id
