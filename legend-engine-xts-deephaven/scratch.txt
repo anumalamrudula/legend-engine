@@ -12,3 +12,16 @@ function go():Any[*]
   let query = meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery1();
   let strSresult = meta::external::query::graphQL::transformation::introspection::graphQLIntrospectionQuery($classes->cast(@Class<Any>), $query);
 }
+
+
+https://exec.alloy.site.gs.com/api/graphQL/v1/execution/execute/prod/com.gs.alloy/blank-prod/mahek-SNAPSHOT/query/com%3A%3Ags%3A%3Atxb%3A%3Aalloy%3A%3Alocaldev%3A%3AQuery/mapping/com%3A%3Ags%3A%3Atxb%3A%3Aalloy%3A%3Amapping%3A%3ASnowflakeToCanonical/runtime/com%3A%3Ags%3A%3Atxb%3A%3Aalloy%3A%3Alocaldev%3A%3ASnowflakeLocal
+
+{
+  "errors": [
+    {
+      "location": [],
+      "message": "Execution error at (resource:/core_external_query_graphql/binding/fromPure/introspection/fromPure_Introspection.pure line:278 column:76), \"Cannot cast a collection of size 0 to multiplicity [1]\"",
+      "path": []
+    }
+  ]
+}
