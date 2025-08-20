@@ -1,59 +1,14 @@
-###Relational
+function meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery1() : meta::external::query::graphQL::metamodel::sdl::Document[1]
+{
+  meta::legend::compileVS('#GQL{'+readFile('/core_external_query_graphql/binding/toPure/sdl/tests/introspection/introspection_query.sdl')->toOne()+'}#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+}
 
-Database my::testDB1
-(
-  Schema pureTestSource2
-  (
-    Table productDataSet
-    (
-      ID INTEGER PRIMARY KEY,
-      NAME VARCHAR(200),
-      lake_in_id INTEGER NOT NULL,
-      lake_out_id INTEGER NOT NULL
-    )
-  )
-)
-Database my::testDB2
-(
-  include my::testDB1
-  Schema pureTestSource2
-  (
-    Table productDataSet
-    (
-      ID INTEGER PRIMARY KEY,
-      NAME VARCHAR(200),
-      lake_in_id INTEGER NOT NULL,
-      lake_out_id INTEGER NOT NULL
-    )
-  )
-)
+function go():Any[*]
+{
+  let elements = readFile('core_external_query_graphql/binding/toPure/sdl/tests/introspection/graphql.legend')->toOne()->meta::legend::compile();
 
+  let classes = $elements->filter(x|$x.name == 'Query')->at(0);
 
-###Lakehouse
-Ingest pp::DataTypes BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=ALLOY_TEST
-[
-   DataTypes(
-      TINY_INT_VAL: TinyInt,
-      DECIMAL_VAL: Decimal(10,4)
-   )
-   DP10 pk=[TINY_INT_VAL];
-]
-
-
-Ingest pp::DataTypes2 BatchMilestoned Snapshot<CSV> owner=AppDir(prodParallel='1') group=ALLOY_TEST
-[
-   DataTypes(
-      TINY_INT_VAL: TinyInt,
-      DECIMAL_VAL: Decimal(10,4)
-   )
-   DP10 pk=[TINY_INT_VAL];
-]
-
-###Relational
-Database my::db
-(
-    includeAccessor #I{pp::DataTypes.DataTypes}#
-    includeAccessor #I{pp::DataTypes2.DataTypes}#
- 
-    join  myJoin(pp::DataTypes.DataTypes.column = pp::DataTypes2.DataTypes.column)
-)   
+  let query = meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery1();
+  let strSresult = meta::external::query::graphQL::transformation::introspection::graphQLIntrospectionQuery($classes->cast(@Class<Any>), $query);
+}
