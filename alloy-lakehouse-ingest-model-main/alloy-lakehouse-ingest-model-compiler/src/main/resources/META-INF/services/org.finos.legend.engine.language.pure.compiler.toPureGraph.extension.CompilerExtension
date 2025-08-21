@@ -1,0 +1,2 @@
+com.gs.alloy.lakehouse.ingest.api.model.compiler.IngestCompilerExtension
+com.gs.alloy.lakehouse.ingest.api.accessor.compiler.AccessorCompilerExtension
