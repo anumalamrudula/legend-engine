@@ -1,0 +1,6 @@
+Class meta::external::ingest::accessor::IngestRelationAccessor<T> extends meta::pure::metamodel::relation::RelationElementAccessor<T>
+{
+    ingestDefinition : meta::external::ingest::specification::metamodel::IngestDefinition[1];
+    dataset : meta::external::ingest::specification::metamodel::dataset::Dataset[1];
+    metadata: Boolean[1]=false;
+}
