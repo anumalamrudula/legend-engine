@@ -39,6 +39,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 public interface IRelationalCompilerExtension extends CompilerExtension
 {
@@ -121,6 +122,12 @@ public interface IRelationalCompilerExtension extends CompilerExtension
     }
 
     default List<Function3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning, CompileContext, Multimap<String, Column>, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning>> getExtraMilestoningProcessors()
+    {
+        return FastList.newList();
+    }
+
+    // New: allow extensions to pre-process Database protocol elements before core compilation
+    default List<BiFunction<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database, CompileContext, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database>> getExtraDatabasePreProcessors()
     {
         return FastList.newList();
     }

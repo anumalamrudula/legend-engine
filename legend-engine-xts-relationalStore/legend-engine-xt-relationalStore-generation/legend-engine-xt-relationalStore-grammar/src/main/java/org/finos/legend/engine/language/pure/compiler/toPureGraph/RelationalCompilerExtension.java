@@ -187,16 +187,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         Database.class,
                         (Database srcDatabase, CompileContext context) ->
                         {
-                            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name, SourceInformationHelper.toM3SourceInformation(srcDatabase.sourceInformation), null)._name(srcDatabase.name);
+                            // Allow extensions to pre-process the Database protocol element before core compilation
+                            List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
+                            ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraDatabasePreProcessors)
+                                    .forEach(pre -> pre.apply(srcDatabase, context));
 
-                            database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                                            ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
-                                    ._stereotypes(srcDatabase.stereotypes == null ? Lists.fixedSize.empty() : ListIterate.collect(srcDatabase.stereotypes, stereotypePointer -> context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation)));
-
-                            return database;
-                        },
-                        (Database srcDatabase, CompileContext context) ->
-                        {
                             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = HelperRelationalBuilder.getDatabase(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), srcDatabase.sourceInformation, context);
                             if (!srcDatabase.includedStores.isEmpty())
                             {
