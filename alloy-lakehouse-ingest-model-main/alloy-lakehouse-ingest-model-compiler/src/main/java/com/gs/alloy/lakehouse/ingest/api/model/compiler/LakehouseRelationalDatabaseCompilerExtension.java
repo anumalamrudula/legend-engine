@@ -4,8 +4,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.IRelationalCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.DynaFunc;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.ElementWithJoins;
@@ -15,9 +14,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.function.BiFunction;
 
-public class LakehouseRelationalDatabaseCompilerExtension implements CompilerExtension
+public class LakehouseRelationalDatabaseCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
     public MutableList<String> group()
@@ -25,48 +25,26 @@ public class LakehouseRelationalDatabaseCompilerExtension implements CompilerExt
         return Lists.mutable.with("Store", "Relational");
     }
 
+    // Hook 1: preprocess Database before core compilation
     @Override
-    public CompilerExtension build()
+    public List<BiFunction<Database, CompileContext, Database>> getExtraDatabasePreProcessors()
     {
-        return new LakehouseRelationalDatabaseCompilerExtension();
-    }
-
-    @Override
-    public Iterable<? extends Processor<?>> getExtraProcessors()
-    {
-        return Collections.singletonList(
-            Processor.newProcessor(
-                Database.class,
-                (db, context) -> { preProcessDatabase(db, context); return null; },
-                null,
-                null,
-                null
-            )
-        );
-    }
-
-    private void preProcessDatabase(Database db, CompileContext context)
-    {
-        if (db.importedIngests == null || db.importedIngests.isEmpty())
+        return Lists.mutable.with((db, context) ->
         {
-            return;
-        }
-
-        // 1) Generate relational tables from imported ingests (lineage-preserving)
-        // TODO: Wire in actual Pure function call. Stub in place to keep control flow.
-        IngestCompilerExtension.generateAccessorTablesForImportedIngests(db, /*dbType*/ "H2");
-
-        // 2) Rewrite operations so joins/filters refer to the generated tables in the current database
-        rewriteOperations(db);
+            if (db.importedIngests == null || db.importedIngests.isEmpty())
+            {
+                return db;
+            }
+            IngestCompilerExtension.generateAccessorTablesForImportedIngests(db, /*dbType*/ "H2");
+            rewriteOperations(db);
+            return db;
+        });
     }
 
     private void rewriteOperations(Database db)
     {
-        // joins
         ListIterate.forEach(db.joins, j -> j.operation = rewrite(j.operation, db));
-        // filters
         ListIterate.forEach(db.filters, f -> f.operation = rewrite(f.operation, db));
-        // views, view groupBy and columns
         ListIterate.forEach(db.schemas, s -> ListIterate.forEach(s.views, v ->
         {
             if (v.filter != null) { v.filter.operation = rewrite(v.filter.operation, db); }
@@ -84,7 +62,6 @@ public class LakehouseRelationalDatabaseCompilerExtension implements CompilerExt
         if (op instanceof DynaFunc)
         {
             DynaFunc fn = (DynaFunc) op;
-            // Neutral marker created by the grammar/walker for ingest-qualified paths
             if ("lakehouseIngestColumn".equals(fn.funcName) && fn.parameters.size() == 1 && fn.parameters.get(0) instanceof LiteralList)
             {
                 LiteralList parts = (LiteralList) fn.parameters.get(0);
@@ -92,18 +69,15 @@ public class LakehouseRelationalDatabaseCompilerExtension implements CompilerExt
                 {
                     String schemaName = "default";
                     String tableName = parts.values.size() > 1 ? String.valueOf(((Literal) parts.values.get(1)).value) : null;
-                    // Transform into a table column pointing at the current database
                     return IngestCompilerExtension.rewriteIngestColumnToTableRef(null, db.getPath(), schemaName, tableName);
                 }
             }
-            // Recurse into parameters
             fn.parameters = ListIterate.collect(fn.parameters, p -> rewrite(p, db));
             return fn;
         }
         else if (op instanceof ElementWithJoins)
         {
             ElementWithJoins ej = (ElementWithJoins) op;
-            // Rewrite join pointer DBs that reference ingests to the current database
             if (ej.joins != null && !ej.joins.isEmpty() && db.importedIngests != null)
             {
                 for (JoinPointer jp : ej.joins)
