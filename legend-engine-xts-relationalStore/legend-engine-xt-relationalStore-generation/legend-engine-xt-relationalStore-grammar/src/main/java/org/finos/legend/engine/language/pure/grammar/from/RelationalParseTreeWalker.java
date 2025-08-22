@@ -702,14 +702,30 @@ public class RelationalParseTreeWalker
         {
             operationElement = this.visitColumnOperation(ctx.columnOperation(), scopeInfo);
         }
-        else if (ctx.ingestColumnOperation() != null)
+        else if (ctx.ingestPathColumn() != null)
         {
-            // Embedded ingest accessor comes as an embedded parser object; wrap as a Literal for now
-            // so downstream operations can still render; dedicated RelationalOperationElement subtype could be added later
-            Literal literal = new Literal();
-            literal.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestColumnOperation());
-            literal.value = PureGrammarParserUtility.fromGrammarString(ctx.ingestColumnOperation().getText(), true);
-            operationElement = literal;
+            // Build a neutral DynaFunc that lakehouse can rewrite later
+            DynaFunc fn = new DynaFunc();
+            fn.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestPathColumn());
+            fn.funcName = "lakehouseIngestColumn";
+            LiteralList list = new LiteralList();
+            list.sourceInformation = fn.sourceInformation;
+            list.values = new ArrayList<>();
+            // Collect fully qualified name + trailing identifiers
+            List<String> parts = new ArrayList<>();
+            parts.addAll(PureGrammarParserUtility.fromPath(ctx.ingestPathColumn().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.ingestPathColumn().qualifiedName().packagePath().identifier()));
+            parts.add(PureGrammarParserUtility.fromIdentifier(ctx.ingestPathColumn().qualifiedName().identifier()));
+            ctx.ingestPathColumn().identifier().forEach(id -> parts.add(PureGrammarParserUtility.fromIdentifier(id)));
+            for (String p : parts)
+            {
+                Literal l = new Literal();
+                l.sourceInformation = fn.sourceInformation;
+                l.value = p;
+                list.values.add(l);
+            }
+            fn.parameters = new ArrayList<>();
+            fn.parameters.add(list);
+            operationElement = fn;
         }
         else if (ctx.joinOperation() != null)
         {

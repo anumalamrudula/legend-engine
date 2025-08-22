@@ -192,9 +192,9 @@ atomicOperation:                            (
                                                 groupOperation
                                                 | ( databasePointer? functionOperation )
                                                 | columnOperation
-                                                | ingestColumnOperation
                                                 | joinOperation
                                                 | constant
+                                                | ingestPathColumn
                                             )
                                             atomicOperationRight?
 ;
@@ -203,6 +203,9 @@ atomicOperationRight:                       (atomicOperator atomicOperation) | a
 atomicOperator:                             EQUAL | TEST_NOT_EQUAL | NOT_EQUAL | GREATER_THAN | LESS_THAN | GREATER_OR_EQUAL | LESS_OR_EQUAL
 ;
 atomicSelfOperator:                         IS_NULL | IS_NOT_NULL
+;
+// Direct ingest-qualified column path: pp::Ingest.DataSet.COLUMN (one or more identifiers after the ingest path)
+ingestPathColumn:                           qualifiedName (DOT identifier)+
 ;
 groupOperation:                             PAREN_OPEN operation PAREN_CLOSE
 ;
@@ -215,8 +218,6 @@ functionOperationArgument:                  operation | functionOperationArgumen
 functionOperationArgumentArray:             BRACKET_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? BRACKET_CLOSE
 ;
 columnOperation:                            databasePointer? tableAliasColumnOperation
-;
-ingestColumnOperation:                      embeddedPure('I')
 ;
 tableAliasColumnOperation:                  tableAliasColumnOperationWithTarget | tableAliasColumnOperationWithScopeInfo
 ;
