@@ -96,19 +96,68 @@ public class IngestCompilerExtension implements CompilerExtension
         {
             return;
         }
-        // Defer to the Pure function to create tables; here we only mark the shape and attach lineage holder type
-        for (Schema schema : db.schemas)
+        // Resolve ingest definitions to Pure instances and call Pure generator
+        CompileContext context = CompileContext.find(); // assumes thread-local or retrievable; replace with proper context passing if needed
+        if (context == null)
         {
-            for (int i = 0; i < schema.tables.size(); i++)
+            return;
+        }
+        // Collect ingest definitions
+        java.util.List<org.finos.legend.pure.generated.Root_meta_external_ingest_specification_metamodel_IngestDefinition> ingestDefs = new java.util.ArrayList<>();
+        for (PackageableElementPointer ptr : db.importedIngests)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement pe = context.resolvePackageableElement(ptr.path, ptr.sourceInformation);
+            if (pe instanceof org.finos.legend.pure.generated.Root_meta_external_ingest_specification_metamodel_IngestDefinition)
             {
-                Table t = schema.tables.get(i);
-                if (!(t instanceof GeneratedAccessorTable))
-                {
-                    // leave intact; generator will populate; this is a placeholder if ever needed for manual injection
-                }
+                ingestDefs.add((org.finos.legend.pure.generated.Root_meta_external_ingest_specification_metamodel_IngestDefinition) pe);
             }
         }
-        // Real generation uses Pure dbGeneration; this stub indicates where to invoke it from the module if needed
+        if (ingestDefs.isEmpty())
+        {
+            return;
+        }
+        org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database pureDb = core_ingest_transformation_dbGeneration_dbGeneration.Root_meta_external_ingest_transformation_dbGeneration_generateDatabase_IngestDefinition_MANY__String_1__Database_1_(
+                org.eclipse.collections.impl.list.mutable.FastList.newList(ingestDefs), dbType, context.pureModel.getExecutionSupport());
+
+        // Build protocol schemas/tables/columns from pureDb
+        // Ensure target schema exists
+        org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema> pureSchemas = pureDb._schemas().toList();
+        for (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema ps : pureSchemas)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema protoSchema = db.schemas.stream().filter(s -> s.name.equals(ps._name())).findFirst().orElse(null);
+            if (protoSchema == null)
+            {
+                protoSchema = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema();
+                protoSchema.name = ps._name();
+                protoSchema.tables = new java.util.ArrayList<>();
+                protoSchema.views = new java.util.ArrayList<>();
+                protoSchema.tabularFunctions = new java.util.ArrayList<>();
+                db.schemas.add(protoSchema);
+            }
+            org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> pureTables = ps._tables().toList();
+            for (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table pt : pureTables)
+            {
+                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table protoTable = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table();
+                protoTable.name = pt._name();
+                protoTable.columns = new java.util.ArrayList<>();
+                java.util.List<String> pk = new java.util.ArrayList<>();
+                org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column> cols = pt._columns().collect(c -> (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column) c).toList();
+                for (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column c : cols)
+                {
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column pc = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column();
+                    pc.name = c._name();
+                    pc.nullable = c._nullable();
+                    pc.type = org.finos.legend.engine.language.pure.grammar.from.datastructure.DataTypeFactory.fromPureType(c._type());
+                    protoTable.columns.add(pc);
+                }
+                if (pt._primaryKey() != null)
+                {
+                    pt._primaryKey().forEach(pkCol -> pk.add(pkCol._name()));
+                }
+                protoTable.primaryKey = pk;
+                protoSchema.tables.add(protoTable);
+            }
+        }
     }
 
     public static RelationalOperationElement rewriteIngestColumnToTableRef(IngestColumn ingestColumn, String database, String schemaName, String tableName)
