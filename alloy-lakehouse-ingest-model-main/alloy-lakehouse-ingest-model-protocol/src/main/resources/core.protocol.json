@@ -1,0 +1,17 @@
+{
+  "purePackage": "meta::protocols::pure::vX_X_X::metamodel::m3",
+  "javaPackage": "org.finos.legend.engine.protocol.pure.m3",
+  "makeAllSuperTypesAbstract": true,
+  "generateEqualsHashCodeAndToString": false,
+  "generateValidation": false,
+  "generateVisitor": false,
+  "json" :
+  {
+    "generateJSONAnnotations": false,
+    "typeKeyword" : "_type",
+    "subTypeOnTopType" : false
+  },
+  "elementsToBeExcluded": [
+    "meta::external::ingest::specification::metamodel::IngestDefinition"
+  ]
+}
