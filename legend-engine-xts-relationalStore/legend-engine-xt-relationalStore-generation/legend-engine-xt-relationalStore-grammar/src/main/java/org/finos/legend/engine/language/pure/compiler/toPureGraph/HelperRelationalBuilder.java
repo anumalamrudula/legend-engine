@@ -159,7 +159,7 @@ public class HelperRelationalBuilder
 
     public static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
     {
-        Column column = (Column) tb._columns().detect(col -> _column.equals(col.getName()));
+        Column column = (Column) tb._columns().detect(col -> _column.equals(((Column) col)._name()));
         Assert.assertTrue(column != null, () -> "Can't find column '" + _column + "'", sourceInformation, EngineErrorType.COMPILATION);
         return column;
     }
