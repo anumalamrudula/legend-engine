@@ -11,6 +11,10 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.IngestColumn;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.GeneratedAccessorTable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +30,12 @@ public class IngestProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(IngestDefinition.class, NAME)
+                        .build()
+                , ProtocolSubTypeInfo.newBuilder(RelationalOperationElement.class)
+                        .withSubtype(IngestColumn.class, "ingestColumn")
+                        .build()
+                , ProtocolSubTypeInfo.newBuilder(Table.class)
+                        .withSubtype(GeneratedAccessorTable.class, "generatedAccessorTable")
                         .build()
         ));
     }
