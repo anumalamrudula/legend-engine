@@ -1,0 +1,19 @@
+{
+  "purePackage": "meta::external::ingest",
+  "javaPackage": "com.gs.alloy.lakehouse.ingest.api.model",
+  "makeAllSuperTypesAbstract": true,
+  "generateEqualsHashCodeAndToString": true,
+  "generateValidation": true,
+  "generateVisitor": true,
+  "json" :
+  {
+    "generateJSONAnnotations": true,
+    "typeKeyword" : "_type",
+    "subTypeOnTopType" : true
+  },
+  "elementsToBeExcluded": [
+    "meta::external::ingest::specification::metamodel::",
+    "meta::external::ingest::accessor::IngestRelationAccessor",
+    "meta::external::ingest::runtime::LakehouseRuntime"
+  ]
+}
