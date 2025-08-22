@@ -8,6 +8,8 @@ import CoreLexerGrammar;
 DATABASE:                                   'Database';
 
 INCLUDE:                                    'include';
+IMPORT:                                    'import';
+INGEST:                                    'Ingest';
 
 TABLE:                                      'Table';
 SCHEMA:                                     'Schema';

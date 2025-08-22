@@ -314,6 +314,12 @@ public class TestRelationalGrammarParser extends TestGrammarParser.TestGrammarPa
         Assert.assertEquals(4, database.includedStores.get(0).sourceInformation.endLine);
         Assert.assertEquals(3, database.includedStores.get(0).sourceInformation.startColumn);
         Assert.assertEquals(30, database.includedStores.get(0).sourceInformation.endColumn);
+
+        // imported ingests
+        if (database.importedIngests != null)
+        {
+            database.importedIngests.forEach(ii -> Assert.assertNotNull(ii.path));
+        }
     }
 
     @Test

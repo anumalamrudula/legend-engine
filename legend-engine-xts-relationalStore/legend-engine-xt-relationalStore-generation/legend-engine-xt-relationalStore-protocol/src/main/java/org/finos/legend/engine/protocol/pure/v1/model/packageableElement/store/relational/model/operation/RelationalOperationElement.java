@@ -24,7 +24,8 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
         @JsonSubTypes.Type(value = ElementWithJoins.class, name = "elemtWithJoins"),
         @JsonSubTypes.Type(value = DynaFunc.class, name = "dynaFunc"),
         @JsonSubTypes.Type(value = Literal.class, name = "literal"),
-        @JsonSubTypes.Type(value = LiteralList.class, name = "literalList")
+        @JsonSubTypes.Type(value = LiteralList.class, name = "literalList"),
+        @JsonSubTypes.Type(value = IngestColumn.class, name = "ingestColumn")
 })
 public abstract class RelationalOperationElement
 {

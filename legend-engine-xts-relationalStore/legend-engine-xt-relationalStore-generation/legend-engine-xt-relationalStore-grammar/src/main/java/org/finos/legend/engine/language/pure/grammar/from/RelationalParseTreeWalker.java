@@ -127,6 +127,14 @@ public class RelationalParseTreeWalker
                     String path = PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier());
                     return new PackageableElementPointer(PackageableElementType.STORE, path, this.walkerSourceInformation.getSourceInformation(includeContext));
                 });
+        if (ctx.importIngest() != null && !ctx.importIngest().isEmpty())
+        {
+            database.importedIngests = ListIterate.collect(ctx.importIngest(), imCtx ->
+            {
+                String path = PureGrammarParserUtility.fromQualifiedName(imCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : imCtx.qualifiedName().packagePath().identifier(), imCtx.qualifiedName().identifier());
+                return new PackageableElementPointer(null, path, this.walkerSourceInformation.getSourceInformation(imCtx));
+            });
+        }
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         if (ctx.taggedValues() != null)
@@ -687,26 +695,34 @@ public class RelationalParseTreeWalker
         }
         else if (ctx.functionOperation() != null)
         {
-            String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : null;
-            operationElement = this.visitFunctionOperation(ctx.functionOperation(), database != null ? ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build() : scopeInfo);
-        }
-        else if (ctx.constant() != null)
-        {
-            operationElement = this.visitConstant(ctx.constant());
+            String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : (scopeInfo != null ? scopeInfo.database : null);
+            operationElement = this.visitFunctionOperation(ctx.functionOperation(), scopeInfo == null ? ScopeInfo.Builder.newInstance().withDatabase(database).build() : ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
         }
         else if (ctx.columnOperation() != null)
         {
             operationElement = this.visitColumnOperation(ctx.columnOperation(), scopeInfo);
         }
+        else if (ctx.ingestColumnOperation() != null)
+        {
+            // Embedded ingest accessor comes as an embedded parser object; wrap as a Literal for now
+            // so downstream operations can still render; dedicated RelationalOperationElement subtype could be added later
+            Literal literal = new Literal();
+            literal.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.ingestColumnOperation());
+            literal.value = PureGrammarParserUtility.fromGrammarString(ctx.ingestColumnOperation().getText(), true);
+            operationElement = literal;
+        }
         else if (ctx.joinOperation() != null)
         {
             return this.visitJoinOperation(ctx.joinOperation(), scopeInfo);
+        }
+        else if (ctx.constant() != null)
+        {
+            operationElement = this.visitConstant(ctx.constant());
         }
         if (operationElement == null)
         {
             throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
-        operationElement.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.atomicOperationRight() != null)
         {
             return this.visitAtomicOperation(ctx.atomicOperationRight(), operationElement, scopeInfo);

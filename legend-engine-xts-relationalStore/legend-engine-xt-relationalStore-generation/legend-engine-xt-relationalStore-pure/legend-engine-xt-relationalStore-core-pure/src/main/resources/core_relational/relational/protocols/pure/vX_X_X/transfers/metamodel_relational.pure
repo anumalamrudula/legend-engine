@@ -47,6 +47,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::re
       filters = $db.filters->map(s|$s->transformFilter($db)),
       stereotypes = $db.stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
       includedStores = $db.includes->map(i|$i->elementToPath())
+      , importedIngests = []
    )
 }
 

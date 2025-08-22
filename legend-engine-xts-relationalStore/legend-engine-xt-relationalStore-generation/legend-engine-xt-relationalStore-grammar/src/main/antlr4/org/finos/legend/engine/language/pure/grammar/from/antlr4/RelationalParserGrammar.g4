@@ -31,6 +31,7 @@ definition:                                 (database)*
 database:                                   DATABASE stereotypes? taggedValues? qualifiedName
                                                 PAREN_OPEN
                                                     include*
+                                                    (importIngest)*
                                                     (
                                                         schema
                                                         | table
@@ -43,6 +44,8 @@ database:                                   DATABASE stereotypes? taggedValues? 
                                                 PAREN_CLOSE
 ;
 include:                                    INCLUDE qualifiedName
+;
+importIngest:                               IMPORT INGEST qualifiedName
 ;
 
 // -------------------------------------- STEREOTYPE --------------------------------------
@@ -189,6 +192,7 @@ atomicOperation:                            (
                                                 groupOperation
                                                 | ( databasePointer? functionOperation )
                                                 | columnOperation
+                                                | ingestColumnOperation
                                                 | joinOperation
                                                 | constant
                                             )
@@ -211,6 +215,8 @@ functionOperationArgument:                  operation | functionOperationArgumen
 functionOperationArgumentArray:             BRACKET_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? BRACKET_CLOSE
 ;
 columnOperation:                            databasePointer? tableAliasColumnOperation
+;
+ingestColumnOperation:                      embeddedPure('I')
 ;
 tableAliasColumnOperation:                  tableAliasColumnOperationWithTarget | tableAliasColumnOperationWithScopeInfo
 ;

@@ -289,6 +289,13 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             builder.append("\n");
             nonEmpty = true;
         }
+        if (database.importedIngests != null && !database.importedIngests.isEmpty())
+        {
+            builder.append(nonEmpty ? "\n" : "");
+            builder.append(LazyIterate.collect(database.importedIngests, ii -> getTabString(1) + "import Ingest " + PureGrammarComposerUtility.convertPath(ii.path)).makeString("\n"));
+            builder.append("\n");
+            nonEmpty = true;
+        }
         if (!nonDefaultSchema.isEmpty())
         {
             builder.append(nonEmpty ? "\n" : "");

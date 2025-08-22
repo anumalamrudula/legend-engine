@@ -32,6 +32,7 @@ import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::c
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::*;
 import meta::relational::metamodel::*;
 import meta::pure::store::set::*;
+import meta::external::store::relational::metamodel::v1_33_0::protocol::*;
 
 
 function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::transformDatabase(db:meta::relational::metamodel::Database[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::store::relational::Database[1]
@@ -46,6 +47,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::r
       filters = $db.filters->map(s|$s->transformFilter($db)),
       stereotypes = $db.stereotypes->map(s|$s->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::transformStereotype()),
       includedStores = $db.includes->map(i|$i->elementToPath())
+      , importedIngests = []
    )
 }
 
