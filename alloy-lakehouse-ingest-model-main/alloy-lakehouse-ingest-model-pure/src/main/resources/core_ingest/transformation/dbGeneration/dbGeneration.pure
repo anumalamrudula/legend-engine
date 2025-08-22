@@ -1,0 +1,180 @@
+import meta::external::ingest::specification::metamodel::readMode::delta::*;
+import meta::external::ingest::specification::metamodel::*;
+import meta::pure::precisePrimitives::*;
+import meta::relational::mapping::*;
+import meta::pure::executionPlan::*;
+import meta::relational::tests::pct::process::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::store::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::ingest::accessor::*;
+import meta::external::ingest::specification::metamodel::dataset::*;
+import meta::external::ingest::transformation::dbGeneration::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+
+//----------------------------------------------------------------------------------------------------------
+// This code is not in 'Transformation' because its functionality is required by the Accessor (in Compiler)
+//----------------------------------------------------------------------------------------------------------
+
+function meta::external::ingest::transformation::dbGeneration::generateDatabase(protocols:meta::external::ingest::specification::metamodel::IngestDefinition[*], dbType:String[1]):Database[1]
+{
+  generateDatabase($protocols, $protocols.datasets, $dbType);
+}
+
+function meta::external::ingest::transformation::dbGeneration::generateDatabase(protocols:meta::external::ingest::specification::metamodel::IngestDefinition[*], datasets:Dataset[*], dbType:String[1]):Database[1]
+{
+  let dbExtension = getDbExtension($dbType);
+
+  let db = ^Database
+  (
+    name = 'MyDatabase',
+    package = meta::external
+  );
+
+  let filteredProtocols = $protocols->filter(x|$x.datasets->find(d|$datasets->contains($d))->isNotEmpty());
+
+  let map = $filteredProtocols->groupBy(x|$x.datasetGroup);
+
+  let schemas = $map->keys()->sort()->map(x|
+      let schema = ^Schema
+      (
+        name = '' + $x + '',
+        database = $db
+      );
+
+      let tables = $map->get($x).values->map(ingestDef|
+
+                          $ingestDef.datasets->filter(d|$datasets->contains($d))->map(d|
+                          buildAppendLogOrMilestonedTable($d, $schema, $dbExtension, $ingestDef.writeMode == WriteMode.BATCH_MILESTONED, false)
+                          ->concatenate(buildMetadata($d, $schema, $dbExtension))
+                          ->concatenate(if($ingestDef.writeMode == WriteMode.BATCH_MILESTONED, |buildAppendLogOrMilestonedTable($d, $schema, $dbExtension, true, true), |[]))
+                       );
+                   );
+
+      $schema->mutateAdd('tables', $tables);
+  );
+  $db->mutateAdd('schemas', $schemas);
+}
+
+function <<access.private>> meta::external::ingest::transformation::dbGeneration::buildMetadata(d: Dataset[1], schema: Schema[1], dbExtension:DbExtension[1]):Table[1]
+{
+    ^Table
+    (
+      name = $d.name + '_LH_BATCH_METADATA',
+      columns = buildMetadataRelationType().columns->map(c | transformColumn($c, $dbExtension)),
+      schema = $schema
+    );
+
+}
+
+function meta::external::ingest::transformation::dbGeneration::buildMetadataRelationType():meta::pure::metamodel::relation::RelationType<Any>[1]
+{
+  @(
+    table_name:Varchar(255)[0..1],
+    batch_start_ts_utc:Timestamp[0..1],
+    batch_end_ts_utc:Timestamp[0..1],
+    batch_status:Varchar(32)[0..1],
+    table_batch_id:Int[0..1],
+    ingest_request_id:Varchar(64)[0..1],
+    batch_source_info:meta::pure::metamodel::variant::Variant[0..1],
+    additional_metadata:meta::pure::metamodel::variant::Variant[0..1],
+    batch_statistics:meta::pure::metamodel::variant::Variant[0..1]
+  )->genericType().rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne()
+}
+
+function   meta::external::ingest::transformation::dbGeneration::datasetHasInzOutZ(dataset:Dataset[1]):Boolean[1]
+{
+    $dataset.preprocessors->fold({i,a|$i->instanceOf(meta::external::ingest::specification::metamodel::preprocessing::augmentation::IncludeInZOutZTimestamp) || $a}, false);
+
+}
+
+function   meta::external::ingest::transformation::dbGeneration::datasetHasOverwriteOnSnapshot(dataset:Dataset[1]):Boolean[1]
+{
+    $dataset.preprocessors->fold({i,a|$i->instanceOf(meta::external::ingest::specification::metamodel::preprocessing::deduplication::OverwriteOnSnapshot) || $a}, false);
+
+}
+
+
+
+function  meta::external::ingest::transformation::dbGeneration::retrieveDeleteFieldIfExist(dataset:Dataset[1]):String[0..1]
+{
+    let isDelta = $dataset.ingestDefinition.readMode->instanceOf(meta::external::ingest::specification::metamodel::readMode::delta::Delta);
+    let deleteField = if($isDelta == true, | $dataset.ingestDefinition.readMode->cast(@Delta).deleteIndicator->cast(@DeleteIndicator).deleteField, | []);
+}
+
+
+function <<access.private>> meta::external::ingest::transformation::dbGeneration::buildAppendLogOrMilestonedTable(source: meta::pure::metamodel::relation::RelationType<Any>[1], isDigestColumnRequired: Boolean[1], milestonedTable : Boolean[1], inZOutZ:Boolean[1]):meta::pure::metamodel::relation::RelationType<Any>[1]
+{
+
+
+   let sourceWithDigest = if ($isDigestColumnRequired,
+                         | $source->addColumns(~[LAKE_DIGEST:Varchar(256)]),
+                         | $source);
+
+   let init =  $sourceWithDigest ->addColumns(
+                      if ($milestonedTable,
+                        | ~[LAKE_IN_ID:Int[1], LAKE_OUT_ID:Int],
+                        | ~[LAKE_BATCH_ID:Int, LAKE_APPEND_TIME:Timestamp]
+                      )
+                );
+  if ($inZOutZ,
+       |$init->addColumns( ~[LAKE_IN_Z:Timestamp[1], LAKE_OUT_Z:Timestamp]),
+       |$init);
+}
+
+function <<access.private>> meta::external::ingest::transformation::dbGeneration::transformColumn(c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1], dbExtension:DbExtension[1]):meta::relational::metamodel::Column[1]
+{
+  ^meta::relational::metamodel::Column
+  (
+    name = $c.name->toOne(),
+    type = convertType($c->functionReturnType(), $dbExtension),
+    nullable = $c->functionReturnMultiplicity().lowerBound.value == 0
+  );
+}
+
+function <<access.private>> meta::external::ingest::transformation::dbGeneration::buildAppendLogOrMilestonedTable(d: Dataset[1], schema: Schema[1], dbExtension:DbExtension[1], isWriteModeMilestoned: Boolean[1], milestonedTable:Boolean[1]):Table[1]
+{
+    let columns = buildAppendLogOrMilestonedTable(
+      $d.source.originalSchema(), 
+      $isWriteModeMilestoned && !$d->datasetHasOverwriteOnSnapshot(),
+      $milestonedTable,
+      $d->datasetHasInzOutZ()
+    ).columns->map(c | transformColumn($c, $dbExtension));
+    let deleteField = retrieveDeleteFieldIfExist($d);
+    ^Table
+    (
+      name = $d.name + if($milestonedTable, |'_MILESTONED', |'_APPENDLOG'),
+      columns = if($milestonedTable && $deleteField->isNotEmpty(), |$columns->filter(x|$x.name != $deleteField), |$columns),
+      schema = $schema,
+      primaryKey = if($milestonedTable, |$d.primaryKey->map(pk|$columns->filter(c|$c.name == $pk.name->toOne()))->concatenate($columns->filter(c|$c.name == 'LAKE_IN_ID')),|[])
+    );
+}
+
+function meta::external::ingest::transformation::dbGeneration::convertColumn(c: meta::pure::metamodel::relation::Column<Nil,Any|*>[1], dbExtension:DbExtension[1]):meta::relational::metamodel::Column[1]
+{
+    ^meta::relational::metamodel::Column
+    (
+      name = $c.name->toOne(),
+      type = convertType($c->functionReturnType(), $dbExtension),
+      nullable = $c->functionReturnMultiplicity().lowerBound == 0
+    )
+}
+
+function meta::external::ingest::transformation::dbGeneration::convertType(genericType:GenericType[1], dbExtension:DbExtension[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  assertNotEmpty($dbExtension.pureTypeToDatabaseTypeConverter, 'The database \'TODO\' doesn\'t support type conversion yet.');  
+  $dbExtension.pureTypeToDatabaseTypeConverter->toOne()->eval($genericType);
+}
+
+function <<access.private>> meta::external::ingest::transformation::dbGeneration::getDbExtension(dbType:String[1]):DbExtension[1]
+{
+  let dbType_enum = DatabaseType->enumValues()->filter(x|$x.name == $dbType);
+  assertNotEmpty($dbType_enum, 'The database type ' + $dbType + ' is unknown');
+  let dbExtension = meta::relational::functions::sqlQueryToString::loadDbExtension($dbType_enum->toOne());
+}
