@@ -37,7 +37,7 @@ public final class RelationalCompileState
         }
     }
 
-    private final ConcurrentMap<TablePtr, TablePtr> tableMappings = new ConcurrentHashMap<>();
+    private final ConcurrentMap<TablePtrCacheKey, TablePtr> tableMappings = new ConcurrentHashMap<>();
 
     private RelationalCompileState()
     {
@@ -47,12 +47,17 @@ public final class RelationalCompileState
     {
         if (from != null && to != null)
         {
-            this.tableMappings.put(from, to);
+            this.tableMappings.put(TablePtrCacheKey.of(from), to);
         }
     }
 
     public TablePtr resolveTable(TablePtr from)
     {
-        return (from == null) ? null : this.tableMappings.get(from);
+        return (from == null) ? null : this.tableMappings.get(TablePtrCacheKey.of(from));
+    }
+
+    public TablePtr resolveTable(String database, String schema, String table)
+    {
+        return this.tableMappings.get(TablePtrCacheKey.of(database, schema, table));
     }
 }
