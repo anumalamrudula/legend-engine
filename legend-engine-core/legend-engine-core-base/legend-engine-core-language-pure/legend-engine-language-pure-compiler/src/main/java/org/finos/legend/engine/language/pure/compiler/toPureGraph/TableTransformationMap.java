@@ -14,31 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.TablePtr;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * A class to encapsulate compilation-related mappings for tables and schemas.
- */
+@Deprecated
 public class TableTransformationMap
 {
-    private final Map<TablePtr, TablePtr> tableMappings;
-
-    public TableTransformationMap()
-    {
-        this.tableMappings = new HashMap<>();
-    }
-
-    public void addTableMapping(TablePtr oldPtr, TablePtr newPtr)
-    {
-        this.tableMappings.put(oldPtr, newPtr);
-    }
-
-    public Map<TablePtr, TablePtr> getTableMappings()
-    {
-        return Collections.unmodifiableMap(tableMappings);
-    }
 }

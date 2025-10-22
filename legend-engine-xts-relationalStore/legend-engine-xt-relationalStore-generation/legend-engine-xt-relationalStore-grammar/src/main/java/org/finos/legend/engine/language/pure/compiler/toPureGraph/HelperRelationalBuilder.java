@@ -277,9 +277,9 @@ public class HelperRelationalBuilder
         Relation table = findRelation(db, _schema, _table, sourceInformation);
         if (table == null)
         {
-            if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+            if (tableptr != null && context != null && context.pureModel != null)
             {
-                TablePtr mappedTablePtr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+                TablePtr mappedTablePtr = RelationalCompileState.of(context.pureModel).resolveTable(tableptr);
                 if (mappedTablePtr != null)
                 {
                     table = findRelation(db, mappedTablePtr.schema, mappedTablePtr.table, sourceInformation);
@@ -361,9 +361,9 @@ public class HelperRelationalBuilder
             return;
         }
         String schemaToReportInError = _schema;
-        if (tableptr != null && context != null && context.pureModel != null && context.pureModel.tableTransformationMap != null)
+        if (tableptr != null && context != null && context.pureModel != null)
         {
-            TablePtr ptr = context.pureModel.tableTransformationMap.getTableMappings().get(tableptr);
+            TablePtr ptr = RelationalCompileState.of(context.pureModel).resolveTable(tableptr);
             if (ptr != null && ptr.schema != null)
             {
                 String generatedSchemaName = ptr.schema;
