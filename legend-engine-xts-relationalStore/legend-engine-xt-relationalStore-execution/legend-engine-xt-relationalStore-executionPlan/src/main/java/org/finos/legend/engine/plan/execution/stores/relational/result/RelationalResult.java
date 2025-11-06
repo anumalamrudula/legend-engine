@@ -77,6 +77,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToPureTDSToObjectSerializer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
@@ -380,7 +381,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     @Override
     public void close()
     {
-        if (temporaryTables != null && statement != null)
+        if (temporaryTables != null && statement != null && (this.databaseType == null || !DatabaseType.Snowflake.name().equalsIgnoreCase(this.databaseType)))
         {
             temporaryTables.forEach((Consumer<? super String>) table ->
             {

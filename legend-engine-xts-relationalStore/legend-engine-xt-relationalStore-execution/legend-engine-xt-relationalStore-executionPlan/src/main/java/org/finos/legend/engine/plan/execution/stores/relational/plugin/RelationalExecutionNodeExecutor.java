@@ -135,6 +135,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
@@ -910,8 +911,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             DatabaseManager databaseManager = DatabaseManager.fromString(databaseType);
             BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, identity);
             databaseManager.relationalDatabaseSupport().accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalStoreExecutionState.getRelationalExecutor().getRelationalExecutionConfiguration(), blockConnection, realizedRelationalResult, tempTableName, databaseTimeZone));
-            blockConnection.addCommitQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
-            blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
+            if (!DatabaseType.Snowflake.name().equalsIgnoreCase(databaseType))
+            {
+                blockConnection.addCommitQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
+                blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
+            }
             blockConnection.close();
         }
     }
@@ -963,10 +967,13 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             if (relationalStoreExecutionState != null && tempTableCreated)
             {
                 String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
-                BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, identity);
-                blockConnection.addCommitQuery(dropTempTableSqlQuery);
-                blockConnection.addRollbackQuery(dropTempTableSqlQuery);
-                blockConnection.close();
+                if (!DatabaseType.Snowflake.name().equalsIgnoreCase(databaseType))
+                {
+                    BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, identity);
+                    blockConnection.addCommitQuery(dropTempTableSqlQuery);
+                    blockConnection.addRollbackQuery(dropTempTableSqlQuery);
+                    blockConnection.close();
+                }
             }
         }
     }
@@ -1293,8 +1300,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() : Connection.TRANSACTION_NONE;
                 blockConnection.setTransactionIsolation(isolationLevel);
-                blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
-                blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                String databaseType = createAndPopulateTempTableExecutionNode.connection != null && createAndPopulateTempTableExecutionNode.connection.type != null ? createAndPopulateTempTableExecutionNode.connection.type.name() : null;
+                if (databaseType == null || !DatabaseType.Snowflake.name().equalsIgnoreCase(databaseType))
+                {
+                    blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                    blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                }
                 return blockConnection;
             }
             catch (Exception e)
