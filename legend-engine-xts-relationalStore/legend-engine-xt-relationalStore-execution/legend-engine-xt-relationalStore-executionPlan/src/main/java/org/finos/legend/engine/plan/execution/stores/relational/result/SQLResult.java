@@ -119,7 +119,7 @@ public abstract class SQLResult extends Result implements StoreExecutable
     public void close()
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(this.getDatabaseType());
-        if (this.getTemporaryTables() != null && this.getStatement() != null)
+        if (this.getTemporaryTables() != null && this.getStatement() != null && (this.getDatabaseType() == null || !DatabaseType.Snowflake.name().equalsIgnoreCase(this.getDatabaseType())))
         {
             this.getTemporaryTables().forEach((Consumer<? super String>) table ->
             {

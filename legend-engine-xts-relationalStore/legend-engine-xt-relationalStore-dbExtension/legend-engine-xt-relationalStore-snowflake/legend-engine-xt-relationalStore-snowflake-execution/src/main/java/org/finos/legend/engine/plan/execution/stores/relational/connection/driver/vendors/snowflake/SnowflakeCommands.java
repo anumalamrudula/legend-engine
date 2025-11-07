@@ -54,7 +54,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
             optionalCSVFileLocation = optionalCSVFileLocation.substring(1);
         }
         List<String> strings = Arrays.asList(
-                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(",", "(", ")")),
+                "CREATE TRANSIENT TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(",", "(", ")")),
                 "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
                 "PUT file:///" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
                 "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + optionalCSVFileLocation + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
@@ -66,7 +66,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     @Override
     public String createTempTable(String tableName, List<Column> columns)
     {
-        return "CREATE TEMPORARY TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(", ")) + ");";
+        return "CREATE TRANSIENT TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(", ")) + ");";
     }
 
     @Override
