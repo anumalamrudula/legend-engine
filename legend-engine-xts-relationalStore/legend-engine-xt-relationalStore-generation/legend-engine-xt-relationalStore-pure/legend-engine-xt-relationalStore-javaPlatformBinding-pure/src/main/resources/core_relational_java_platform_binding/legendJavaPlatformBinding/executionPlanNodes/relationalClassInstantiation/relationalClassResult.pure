@@ -134,8 +134,14 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
       let typeAndNameInfo = $propertyTypeAndFieldNameMap->get($p)->toOne();
       let fieldType = $typeAndNameInfo.first;
       let fieldName = $typeAndNameInfo.second;
-      $cl
-      ->addField(javaField(['private'], $fieldType, $fieldName))
+       let optionalInitializer = if($fieldType->isJavaOptional(),
+                                    | [javaOptional()->j_invoke('empty', [], $fieldType)],
+                                    | []);
+       let privateField = if($optionalInitializer->isEmpty(),
+                             | javaField(['private'], $fieldType, $fieldName),
+                             | javaField(['private'], $fieldType, $fieldName, $optionalInitializer->at(0)));
+       $cl
+       ->addField($privateField)
       ->addMethod(javaMethod(['public'], $fieldType, $conventions->getterName($p), [], 'return this.' + $fieldName + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $fieldName)))
       ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($p), [javaParam($fieldType, $fieldName)], 'this.' +  $fieldName + ' = ' + $fieldName + ';'));
    }, $implementationClass);
@@ -207,8 +213,14 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          let typeAndNameInfo = $propertyTypeAndFieldNameMap->get($p)->toOne();
          let fieldType = $typeAndNameInfo.first;
          let fieldName = $typeAndNameInfo.second;
-         $cl
-         ->addField(javaField(['private'], $fieldType, $fieldName))
+           let optionalInitializer = if($fieldType->isJavaOptional(),
+                                        | [javaOptional()->j_invoke('empty', [], $fieldType)],
+                                        | []);
+           let privateField = if($optionalInitializer->isEmpty(),
+                                 | javaField(['private'], $fieldType, $fieldName),
+                                 | javaField(['private'], $fieldType, $fieldName, $optionalInitializer->at(0)));
+           $cl
+           ->addField($privateField)
          ->addMethod(javaMethod(['public'], $fieldType, $conventions->getterName($p), [], 'return this.' + $fieldName + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $fieldName)))
          ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($p), [javaParam($fieldType, $fieldName)], 'this.' +  $fieldName + ' = ' + $fieldName + ';'));
       }, $implementationClass);
