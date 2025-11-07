@@ -404,7 +404,13 @@ function {doc.doc = 'Creates a private java field given a pure property. Sanitiz
 
    let fieldType = $conventions->pureTypeToJavaType($property);
 
-   let javaField = javaField(['private'], $fieldType, $fieldName);
+   let defaultInitializer = if($optionalProperty && $fieldType->isJavaOptional(),
+                               | [javaOptional()->j_invoke('empty', [], $fieldType)],
+                               | []);
+
+   let javaField = if($defaultInitializer->isEmpty(),
+                      | javaField(['private'], $fieldType, $fieldName),
+                      | javaField(['private'], $fieldType, $fieldName, $defaultInitializer->at(0)));
 }
 
 
