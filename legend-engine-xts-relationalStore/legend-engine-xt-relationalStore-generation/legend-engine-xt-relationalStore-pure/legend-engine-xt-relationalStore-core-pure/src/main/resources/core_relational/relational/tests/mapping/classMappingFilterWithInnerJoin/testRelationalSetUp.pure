@@ -309,6 +309,23 @@ Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mappi
 
 )
 
+Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::mappingWithInnerJoinInFilterUsingAggView
+(
+
+    Person : Relational
+             {
+                ~filter [dbWithInnerJoinAggViewFilter] (INNER) @PersonAgg_Firm | [dbWithInnerJoinAggViewFilter] PersonAggFirmFilter
+                 ~primaryKey
+                 (
+                    [dbWithInnerJoinAggViewFilter]personAggView.personId
+                 )
+                 ~mainTable [dbWithInnerJoinAggViewFilter]personAggView
+                 firstName : [dbWithInnerJoinAggViewFilter]@PersonAgg_Person | personTable.FIRSTNAME,
+                 lastName : [dbWithInnerJoinAggViewFilter]@PersonAgg_Person | personTable.LASTNAME,
+                 age : [dbWithInnerJoinAggViewFilter]personAggView.firmId
+             }
+)
+
 Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::mappingWithInnerJoinInFilterEdgeCases1
 (
 
@@ -467,6 +484,26 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
 (
    include meta::relational::tests::mapping::embedded::model::store::myDB
    Filter twoHundredWestFilter(ADDRESS_LOCATION.ADDRESS_ID = '200 west')
+)
+
+###Relational
+Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::dbWithInnerJoinAggViewFilter
+(
+    include meta::relational::tests::dbInc
+    View personAggView
+    (
+        ~groupBy
+        (
+            personTable.ID,
+            personTable.FIRMID
+        )
+        personId: personTable.ID PRIMARY KEY,
+        firmId: personTable.FIRMID PRIMARY KEY
+    )
+
+    Join PersonAgg_Person(personAggView.personId = personTable.ID)
+    Join PersonAgg_Firm(personAggView.firmId = firmTable.ID)
+    Filter PersonAggFirmFilter(firmTable.LEGALNAME = 'Firm X')
 )
 
 ###Relational
